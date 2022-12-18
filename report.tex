@@ -4,7 +4,7 @@
 \strictpagecheck
 
 %% Packages
-
+\usepackage{csquotes}
 \usepackage{ytableau}
 \ytableausetup{centertableaux}
 
@@ -50,6 +50,21 @@ noabbrev
 % Text
 
 % Maths
+\newcommand{\identity}{1}
+\newcommand{\identityMatrix}{\symbb{I}}
+\newcommand{\symmetricGroup}[1][n]{S_{#1}}
+\DeclareMathOperator{\Mat}{Mat}
+\RenewDocumentCommand{\matrices}{ o m m }{
+    \IfNoValueTF{#1}{
+        \Mat(#3, #2)
+    }{
+        \Mat(#3, #1 \times #2)
+    }
+}
+\renewcommand{\field}{\symbb{k}}
+\newcommand{\trans}{\top}
+\newcommand{\hermit}{\dagger}
+\newcommand{\action}{\mathbin{.}}
 \ExplSyntaxOn
 % Create LaTeX interface command
 \NewDocumentCommand{\cycle}{ O{\,} m }{  % optional arg is separator, mandatory
@@ -66,6 +81,8 @@ noabbrev
     \clist_use:Nn \l_willougbhy_cycle_clist { #1 }  % print list separated by #1
 }
 \ExplSyntaxOff
+\DeclarePairedDelimiter{\tuple}{\langle}{\rangle}
+\newcommand{\isomorphic}{\cong}
 
 
 \includeonly{}
@@ -80,8 +97,172 @@ noabbrev
     \mainmatter
     
     \chapter{Mathematical Preliminaries}
+    Physics is full of tensors, they appear in every field, from the moment of inertia tensor in classical mechanics to observables in quantum mechanics, from the electromagnetic field strength in electrodynamics to the curvature tensor in general relativity.
+    As such being able to quickly and efficiently manipulate and perform computations with tensors is of utmost importance to all physicists.
+    Unfortunately the classic physicist definition of a tensor is the famously unhelpful
+    \begin{displayquote}
+        A tensor is something which transforms like a tensor.
+    \end{displayquote}
+    Usually this is then followed by a definition of how a tensor transforms in a given setting, say rotations in classical mechanics or Lorentz transformations in relativity.
+    We will instead start with a more general definition of a tensor, but for this we will require some more mathematics first.
+    
+    
     \section{Groups}
+    Groups capture the idea of a symmetry in a precise and mathematical way.
+    Intuitively a symmetry is something we can do to a system which leaves the system unchanged, or invariant under that symmetry.
+    We can abstract the notion of a symmetry through four requirements.
+    Given some collection of symmetries there must be a way to combine them, do nothing, and undo any of the symmetries, and the final requirement is that the way we use brackets doesn't matter.
+    This leads to the following definition.
+    
+    \begin{dfn}{Group}{}
+        A \defineindex{group}, \((G, \cdot)\), is a set, \(G\), and a binary operation, \(\cdot \colon G \times G \to G\) such that the following axioms are satisfied:
+        \begin{description}
+            \item[Identity]\index{identity} there exists some distinguished element, \(\identity \in G\), such that for all \(x \in G\) we have \(\identity \cdot x = x \cdot \identity = x\);
+            \item[Inverse]\index{inverse} for all \(x \in G\) there exists some \(x^{-1} \in G\) such that \(x \cdot x^{-1} = x^{-1} \cdot x = \identity\);
+            \item[Associativity]\index{associativity} for all \(x, y, z \in G\) we have \((x \cdot y) \cdot z = x \cdot (y \cdot z)\).
+        \end{description}
+    \end{dfn}
+    
+    We follow the common abuse of terminology and refer to \(G\) alone as the group with the operation left implicit.
+    We will also write most group operations as juxtaposition, writing \(xy\) for \(x \cdot y\).
+    
+    The prototype for a group is the \defineindex{symmetric group} on \(n\) objects, \(\symmetricGroup\).
+    This is defined as the set
+    \begin{equation}
+        \symmetricGroup \coloneqq \{ \sigma \colon \{1, \dotsc, n\} \to \{1, \dotsc, n\} \mid \sigma \text{ is a bijection} \}
+    \end{equation}
+    with function composition as the group operation.
+    We will use cycle notation for elements of \(\symmetricGroup\).
+    For example, \(\cycle{1,3,4}\) sends \(1\) to \(3\), \(3\) to \(4\), and \(4\) to 1.
+    
+    Another important collection of groups are various collections of matrices with matrix multiplication as the group operation.
+    In this case the group identity is the identity matrix of  the appropriate dimension, \(\identityMatrix\).
+    Let \(\matrices{n}{\field}\) denote the set of \(n \times n\) matrices with entries in \(\field\).
+    The following are all groups under matrix multiplication:
+    \begin{itemize}
+        \item \defineindex{general linear group} \(\generalLinear(n, \field) \coloneqq \{M \in \matrices{n}{\field} \mid M \text{ is invertible} \}\);
+        \item \defineindex{special linear group} \(\specialLinear(n, \field) \coloneqq \{M \in \generalLinear(n, \field) \mid \det M = 1\}\);
+        \item \defineindex{orthogonal group} \(\orthogonal(n) \coloneqq \{O \in \matrices{n}{\reals} \mid O^\trans O = \identityMatrix \}\);
+        \item \defineindex{special orthogonal group} \(\specialOrthogonal(n) \coloneqq \{O \in \orthogonal(n) \mid \det O = 1\}\);
+        \item \defineindex{unitary group} \(\unitary(n) \coloneqq \{U \in \matrices{n}{\complex} \mid U^\hermit U = \identityMatrix \}\);
+        \item \defineindex{special unitary group} \(\specialUnitary(n) \coloneqq \{U \in \unitary(n) \mid \det U = 1\}\).
+    \end{itemize}
+    
+    Most of the time when considering a group we think of the symmetries it represents being applied to some object.
+    This leads to the following definition.
+    
+    \begin{dfn}{Group Action}{}
+        Let \(G\) be a group and \(X\) a set.
+        A (left) group action of \(G\) on \(X\) is a function \(\varphi \colon G \times X \to X\) such that
+        \begin{description}
+            \item[Identity] for all \(x \in X\) we have \(\varphi(\identity, x) = x\),
+            \item[Compatibility] for all \(g, h \in G\) and \(x \in X\) we have \(\varphi(g, \varphi(h, x)) = \varphi(gh, x)\) where \(gh\) is the product of \(g\) and \(h\) in \(G\).
+        \end{description}
+        We usually write \(\varphi(g, x) = g \action x\) or even \(\varphi(g, x) = gx\).
+        In this case we have \(\identity \action x = x\) and \(g \action (h \action x) = (gh) \action x\).
+    \end{dfn}
+    
+    The symmetric group, \(\symmetricGroup\), acts on \(n\)-tuples, \(\tuple{a_1, \dotsc, a_n}\), by permuting the elements.
+    For example, \(\cycle{1,3,4} \in \symmetricGroup[5]\) acts on \(\tuple{a_1, a_2, a_3, a_4, a_5}\) by
+    \begin{equation}
+        \cycle{1,3,4} \action \tuple{a_1, a_2, a_3, a_4, a_5} = \tuple{a_4, a_2, a_1, a_3, a_5}.
+    \end{equation}
+    Note that this action is done by permuting the symbols \(a_i\), rather than by permuting the values of \(i\), which would instead give \(\tuple{a_3, a_2, a_4, a_1, a_5}\).
+    
+    Matrix groups, such as \(\generalLinear(n, \field)\), have a natural action on the \(n\)-dimensional vector space \(\field^n\) by interpreting elements of \(\field^n\) as column vectors and then acting on them through matrix multiplication.
+    The action of matrices on vector spaces in this form turns out to be a very useful way of thinking about a group, since matrix multiplication is simple and easy to perform on a computer.
+    This insight leads to the idea of a representation, the subject of the next section, but first we need one more definition for maps between groups preserving the group structure.
+    
+    \begin{dfn}{Morphisms}{}
+        Let \(G\) and \(H\) be groups.
+        A \defineindex{group homomorphism} is a map \(\varphi \colon G \to H\) such that \(\varphi(gg') = \varphi(g)\varphi(g')\).
+        If \(\varphi\) is invertible then we call it an \defineindex{isomorphism}.
+        If there is an isomorphism between \(G\) and \(H\) we say that \(G\) and \(H\) are \defineindex{isomorphic}, and denote this \(G \isomorphic H\).
+    \end{dfn}
+    
+    Notice that if \(\identity_G\) and \(\identity_H\) are the identity elements of \(G\) and \(H\) respectively then we have \(\varphi(\identity_G) = \identity_H\) as well as \(\varphi(g^{-1}) = \varphi(g)^{-1}\) for all \(g \in G\).
+    
     \section{Representations}
+    \begin{dfn}{Representation}{}
+        Let \(G\) be a group.
+        A \defineindex{group representation}, \((\rho, V)\), is a pair consisting of a vector space, \(V\), called the representation space, and a homomorphism \(\rho \colon G \to \generalLinear(V)\).
+        Here \(\generalLinear(V) \coloneqq \{T \colon V \to V \mid T \text{ is linear}\}\) is the group of automorphisms of \(V\) with function composition as the group operation.
+        Fixing some basis for \(V\) we can identify \(\generalLinear(V) \isomorphic \generalLinear(\dim V, \field)\) if \(V\) is a \(\field\)-vector space.
+    \end{dfn}
+    
+    Another way of defining a representation is as a group action of \(G\) on \(V\) given by \(g \action v = \rho(g)v\) for \(g \in G\) and \(v \in V\).
+    
+    It is common to refer to both \(\rho\), \(V\), alone, as well as the pair \((\rho, V)\) as the representation.
+    The simplest example of a representation is the \defineindex{trivial representation}, \((\rho_{\text{trivial}}, V)\), which acts trivially on \(V\), that is \(\rho_{\text{trivial}}(g) = \identityMatrix\) for all \(g \in G\) and so \(g \action v = v\) for all \(g \in G\).
+    
+    \begin{exm}{Permutation Representation}{}
+        Consider the symmetric group on three elements, \(\symmetricGroup[3]\).
+        This has a representation on \(\reals^3\) given by identifying
+        \begin{equation*}
+            \rho\cycle{1,2} = 
+            \begin{pmatrix}
+                0 & 1 & 0\\
+                1 & 0 & 0\\
+                0 & 0 & 1
+            \end{pmatrix}
+            ,\ \rho\cycle{1,3} = 
+            \begin{pmatrix}
+                0 & 0 & 1\\
+                0 & 1 & 0\\
+                1 & 0 & 0
+            \end{pmatrix}
+            , \ \text{and} \  \rho\cycle{2,3} = 
+            \begin{pmatrix}
+                1 & 0 & 0\\
+                0 & 0 & 1\\
+                0 & 1 & 0
+            \end{pmatrix}
+            .
+        \end{equation*}
+        This then acts by permuting the basis vectors \(\ve{1} = (1, 0, 0)^\trans\), \(\ve{2} = (0, 1, 0)^\trans\), and \(\ve{3} = (0, 0, 1)^\trans\), so we call this the \defineindex{permutation representation}.
+        The representation of any other group element can be found by writing the element as a product of \define{transpositions}\index{transposition} (two element cycles).
+        For example, \(\cycle{1,2,3} = \cycle{1,2}\cycle{2,3}\) and so
+        \begin{multline}
+            \rho\cycle{1,2,3} = \rho(\cycle{1,2} \cycle{2,3}) = \rho\cycle{1,2} \, \rho\cycle{2,3}\\
+            = 
+            \begin{pmatrix}
+                0 & 1 & 0\\
+                1 & 0 & 0\\
+                0 & 0 & 1
+            \end{pmatrix}
+            \begin{pmatrix}
+                1 & 0 & 0\\
+                0 & 0 & 1\\
+                0 & 1 & 0
+            \end{pmatrix}
+            = 
+            \begin{pmatrix}
+                0 & 0 & 1\\
+                1 & 0 & 0\\
+                0 & 1 & 0
+            \end{pmatrix}
+            .
+        \end{multline}
+    \end{exm}
+    
+    There are an infinite number of representations of any group, given some representation \((\rho, V)\) we can always consider some larger space \(W \supset V\) and define \(\rho' \colon G \to \generalLinear(W)\) so that \(\rho'(g)\) acts on the subspace \(V\) as \(\rho(g)\).
+    Clearly this representation doesn't really give us any new information.
+    For this reason we define irreducible representations.
+    
+    \begin{dfn}{Irreducible Representation}{}
+        Let \(G\) be a group and \((\rho, V)\) a representation of \(G\).
+        We say that \((\rho, V)\) is an \defineindex{irreducible representation}, or irrep, if \(V\) has no \(G\)-invariant subspaces.
+        That is, there is no \(W \subset V\) such that \(g \action w \in W\) for all \(w \in W\).
+    \end{dfn}
+
+    \begin{dfn}{Indecomposable Representation}{}
+        Let \(G\) be a group and \((\rho, V)\) a representation of \(G\).
+        We say that \((\rho, V)\) is a \defineindex{decomposable representation} if \(\{\rho(g)\}\) can be simultaneously diagonalised.
+        In other words, there exist representations \((\rho_i, V_i)\) such that \(\rho = \bigoplus_i \rho_i\) and \(V = \bigoplus_i V_i\).
+    \end{dfn}
+    
+    For a finite group, \(G\), and a real or complex representation space all indecomposable representations are irreducible.
+    
     \section{Birdtracks}
     \section{Representations of the Cyclic Group}
     
