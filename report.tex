@@ -1,0 +1,92 @@
+% !TeX program = lualatex
+\documentclass[fleqn]{NotesClass}
+
+\strictpagecheck
+
+%% Packages
+
+\usepackage{ytableau}
+\ytableausetup{centertableaux}
+
+% Tikz stuff
+\usepackage{tikz}
+% External
+\usetikzlibrary{external}
+\tikzexternalize[prefix=tikz-external/]
+% Other libraries
+
+
+% References, should be last things loaded
+\usepackage[pdfauthor={Willoughby Seago},pdftitle={MPhys Report: Computational Group Theory},pdfkeywords={group theory, representation theory, birdtracks, Lie theory},pdfsubject={Lie Groups, Representation Theory}]{hyperref}  % Should be loaded second last (cleveref last)
+\colorlet{hyperrefcolor}{blue!60!black}
+\hypersetup{colorlinks=true, linkcolor=hyperrefcolor, urlcolor=hyperrefcolor}
+\usepackage[
+capitalize,
+nameinlink,
+noabbrev
+]{cleveref} % Should be loaded last
+
+% My packages
+\usepackage{NotesBoxes}
+\usepackage{NotesMaths}
+
+\setmathfont[range={\int, \oint, \otimes, \oplus, \bigotimes, \bigoplus}]{Latin Modern Math}
+
+% Highlight colour
+\definecolor{highlight}{HTML}{710D78}
+\definecolor{my blue}{HTML}{2A0D77}
+\definecolor{my red}{HTML}{770D38}
+\definecolor{my green}{HTML}{14770D}
+\definecolor{my yellow}{HTML}{E7BB41}
+
+% Title page info
+\title{Computational Group Theory}
+\author{Willoughby Seago}
+\date{\today}
+\subtitle{MPhys Project Report}
+\subsubtitle{Supervised by Tony Kennedy}
+
+% Commands
+% Text
+
+% Maths
+\ExplSyntaxOn
+% Create LaTeX interface command
+\NewDocumentCommand{\cycle}{ O{\,} m }{  % optional arg is separator, mandatory
+    %arg is comma separated list
+    (
+    \willoughby_cycle:nn { #1 } { #2 }
+    )
+}
+
+\clist_new:N \l_willougbhy_cycle_clist  % Create new clist variable
+\cs_new_protected:Npn \willoughby_cycle:nn #1 #2 {  % create LaTeX3 function
+    \clist_set:Nn \l_willougbhy_cycle_clist { #2 }  % set clist variable with
+    %clist #2 passed by user
+    \clist_use:Nn \l_willougbhy_cycle_clist { #1 }  % print list separated by #1
+}
+\ExplSyntaxOff
+
+
+\includeonly{}
+
+\begin{document}
+    \frontmatter
+    \titlepage
+    \maketitle
+    \tableofcontents
+    % \listoffigures
+    % \listoftables
+    \mainmatter
+    
+    \chapter{Mathematical Preliminaries}
+    \section{Groups}
+    \section{Representations}
+    \section{Birdtracks}
+    \section{Representations of the Cyclic Group}
+    
+    \backmatter
+    %    \renewcommand{\glossaryname}{Acronyms}
+    %    \printglossary[acronym]
+    \printindex
+\end{document}
