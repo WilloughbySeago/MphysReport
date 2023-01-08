@@ -3,6 +3,8 @@
 
 \strictpagecheck
 
+%\usepackage{ebgaramond}
+
 %% Packages
 \usepackage{csquotes}
 \usepackage{ytableau}
@@ -15,6 +17,14 @@
 \tikzexternalize[prefix=tikz-external/]
 % Other libraries
 
+
+\RequirePackage[%
+sorting=none,  % Don't sort the references, they will appear in the order they are first cited
+style=numeric-comp,  % citations like [1] and citing 1, 2, and 3 gives [1-3]
+giveninits=true,  % style author names as J. Doe
+language=british  % Make dates dd/mm/yyyy
+]{biblatex}
+\addbibresource{ref.bib}
 
 % References, should be last things loaded
 \usepackage[pdfauthor={Willoughby Seago},pdftitle={MPhys Report: Computational Group Theory},pdfkeywords={group theory, representation theory, birdtracks, Lie theory},pdfsubject={Lie Groups, Representation Theory}]{hyperref}  % Should be loaded second last (cleveref last)
@@ -38,6 +48,12 @@ noabbrev
 \definecolor{my red}{HTML}{770D38}
 \definecolor{my green}{HTML}{14770D}
 \definecolor{my yellow}{HTML}{E7BB41}
+\colorlet{light highlight}{highlight!30}
+\colorlet{example background}{azure(web)(azuremist)!45}
+\colorlet{background color}{white}
+
+\AtBeginEnvironment{exm}{\colorlet{background color}{example background}}
+\AtEndEnvironment{exm}{\colorlet{background color}{white}}
 
 % Title page info
 \title{Computational Group Theory}
@@ -49,8 +65,8 @@ noabbrev
 % Commands
 % Tikz
 \tikzset{wire/.style={thick}}
-\tikzset{underwire/.style={line width=1mm, white}}
-\tikzset{symmetriser/.style={fill=white, thick, rounded corners=1pt}}
+\tikzset{underwire/.style={line width=1mm, background color}}
+\tikzset{symmetriser/.style={fill=background color, thick, rounded corners=1pt}}
 \tikzset{antisymmetriser/.style={fill=black, thick, rounded corners=1pt}}
 
 % Text
@@ -89,6 +105,8 @@ noabbrev
 \ExplSyntaxOff
 \DeclarePairedDelimiter{\tuple}{\langle}{\rangle}
 \newcommand{\isomorphic}{\cong}
+\newcommand{\projector}[1]{\symbfup{P}_{#1}}
+\newcommand{\hooknumber}[1]{\abs{#1}}
 
 
 \includeonly{}
@@ -433,30 +451,308 @@ noabbrev
     \section{What are Young Tableau}
     \begin{dfn}{Partition}{}
         Let \(k \in \naturals\).
-        A \defineindex{partition} of \(k\) is a tuple, \(\tuple{\lambda_1, \dotsc, \lambda_n}\) such that
+        A \defineindex{partition} of \(k\) is a tuple, \(\tuple{\lambda_1, \dotsc, \lambda_n}\) such that \cite{cvitanovic}
         \begin{equation}
             k = \sum_{i = 1}^{n} \lambda_i.
         \end{equation}
         A partition is \define{ordered}\index{ordered partition} if \(\lambda_i \ge \lambda_{i+1}\) for all \(i = 1, \dotsc, n - 1\).
     \end{dfn}
+
     For example, \(\tuple{1,5,3}\) is a partition of 9, this is not ordered, the equivalent ordered partition is \(\tuple{5,3,1}\).
     
-    \begin{dfn}{Young Tableau}{}
-        Given an ordered partition \(\tuple{\lambda_1, \dotsc, \lambda_n}\) of some \(k \in \naturals\) the \defineindex{Young diagram} is formed from a row of \(\lambda_1\) boxes above a row of \(\lambda_2\) boxes and so on down to a row of \(\lambda_n\) boxes, all aligned to the left.
+    \begin{dfn}{Young Diagram}{}
+        Given an ordered partition \(\tuple{\lambda_1, \dotsc, \lambda_n}\) of some \(k \in \naturals\) the \defineindex{Young diagram} is formed from a row of \(\lambda_1\) boxes above a row of \(\lambda_2\) boxes and so on down to a row of \(\lambda_n\) boxes, all aligned to the left \cite{cvitanovic}.
     \end{dfn}
     
     For example, the ordered partitions of four are \(\tuple{4}\), \(\tuple{3,1}\), \(\tuple{2,2}\), \(\tuple{2,1,1}\), and \(\tuple{1,1,1,1}\).
     The corresponding Young diagrams are
+    \ytableausetup{smalltableaux}
     \begin{equation}
-        \ytableausetup{smalltableaux}
         \ydiagram{4}\,, \quad \ydiagram{3,1}\,, \quad \ydiagram{2,2}\,, \quad \ydiagram{2,1,1}\,, \qand \ydiagram{1,1,1,1}\,.
     \end{equation}
     
+    \begin{dfn}{Young Tableau}{}
+        Given a Young diagram we form a \defineindex{Young tableau} by writing numbers in the boxes in such a way that the numbers are increasing from left to right along a row and strictly increasing from top to bottom down a column \cite{cvitanovic}.
+        A \(k\) box \defineindex{standard Young tableau} is a Young tableau using the numbers 1 through \(k\) exactly once.
+    \end{dfn}
+    
+    For example, given the Young diagram associated with the partition \(\tuple{2,1,1}\) there are three distinct standard tableaux:
+    \begin{equation}
+        \ytableaushort{12,3,4}, \qquad \ytableaushort{13,2,4}, \qqand \ytableaushort{14,2,3}.
+    \end{equation}
+    
+    \begin{dfn}{Hook Number}{}
+        Given a Young diagram, \(Y\), the \defineindex{hook length} of a box is the number of boxes to the right of that box, plus the number of boxes below that box, plus 1 for the box itself.
+        The \defineindex{hook number}, \(\hooknumber{Y}\), is the product of the hook lengths.
+    \end{dfn}
+    \begin{exm}{}{}
+        Consider the Young diagram given by the partition \(\tuple{3,2}\):
+        \begin{equation}
+            Y = \ydiagram{3,2}.
+        \end{equation}
+        The hooks of this diagram are
+        \begin{equation}
+            \begin{ytableau}
+                *(light highlight) \strut & *(light highlight) \strut & *(light highlight) \strut \\
+                *(light highlight) \strut & \strut
+            \end{ytableau}
+            , \quad
+            \begin{ytableau}
+                \strut & *(light highlight) \strut & *(light highlight) \strut \\
+                \strut & *(light highlight) \strut
+            \end{ytableau}
+            , \quad
+            \begin{ytableau}
+                \strut & \strut & *(light highlight) \strut \\
+                \strut & \strut
+            \end{ytableau}
+            , \quad
+            \begin{ytableau}
+                \strut & \strut & \strut \\
+                *(light highlight) \strut & *(light highlight) \strut
+            \end{ytableau}
+            , \qand
+            \begin{ytableau}
+                \strut & \strut & \strut \\
+                \strut & *(light highlight) \strut
+            \end{ytableau}
+            .
+        \end{equation}
+        Labelling each box with the associated hook length gives
+        \begin{equation}
+            \ytableaushort{431,21}
+        \end{equation}
+        The hook number is
+        \begin{equation}
+            \hooknumber{Y} = 4 \cdot 3 \cdot 2 = 24.
+        \end{equation}
+    \end{exm}
+    
     \section{Young Projectors}
+    \begin{dfn}{Young Projector}{}
+        Given a \(k\) box Young tableau, \(Y\), with \(r\) rows and \(c\) columns the \defineindex{Young projector}, \(\projector{Y}\) associated with \(Y\) is given by the following procedure \cite{cvitanovic}:
+        \begin{enumerate}
+            \item Symmetrise over the numbers in each row.
+            \item Antisymmetrise over the numbers in each column.
+            \item Normalise by a factor of
+            \begin{equation}
+                \alpha_Y \coloneqq \frac{1}{\hooknumber{Y}} \left( \prod_{i=1}^{r} \abs{S_i}! \right) \left( \prod_{j=1}^{c} \abs{A_j}! \right).
+            \end{equation}
+            Here \(\hooknumber{Y}\) is the hook number of the diagram, \(\abs{S_i}\) is the length of the \(i\)th row and \(\abs{A_i}\) is the length of the \(j\)th column.
+        \end{enumerate}
+    \end{dfn}
+    
+    \begin{exm}{}{}
+        Consider the \(5\) box Young tableau
+        \begin{equation}
+            Y = \ytableaushort{123,45}.
+        \end{equation}
+        Numbering the boxes we get
+        \begin{equation}
+            \ytableaushort{123,45}.
+        \end{equation}
+        We need to symmetrise over \(1\), \(2\) and \(3\), and \(4\) and \(5\), using \(S_{123}\) and \(S_{45}\), and antisymmetrise over \(1\) and \(4\), \(2\) and \(5\), and \(3\) on its own, using \(A_{14}\), \(A_{25}\), and \(A_{3} = \cycle{} = \identity\).
+        
+        The normalisation factor is
+        \begin{align}
+            \alpha_Y &= \frac{1}{24} (3!2!)(2!2!1!) = 6.
+        \end{align}
+        The Young projector is then
+        \begin{equation}
+            \projector{Y} = 6
+            \tikzsetnextfilename{young-projector-example}
+            \begin{tikzpicture}[baseline=(A)]
+                \node (A) at (0, 0.9) {};
+                \foreach \y in {0, 0.5, ..., 2} {
+                    \draw[wire] (0, \y) -- ++ (0.5, 0);
+                }
+                \draw[wire, rounded corners] (1, 0) -- ++ (0.5, 0) -- ++ (0.5, 0.5) -- ++ (1.5, 0) -- ++ (0.5, -0.5) -- ++ (0.5, 0);
+                \draw[wire, rounded corners] (1, 0.5) -- ++ (0.5, 0) -- ++ (0.5, 1) -- ++ (1.5, 0) -- ++ (0.5, -1) -- ++ (0.5, 0);
+                \draw[underwire, rounded corners] (1, 1) -- ++ (0.5, 0) -- ++ (0.5, -1) -- ++ (1.5, 0) -- ++ (0.5, 1) -- ++ (0.5, 0);
+                \draw[wire, rounded corners] (1, 1) -- ++ (0.5, 0) -- ++ (0.5, -1) -- ++ (1.5, 0) -- ++ (0.5, 1) -- ++ (0.5, 0);
+                \draw[underwire, rounded corners] (1, 1.5) -- ++ (0.5, 0) -- ++ (0.5, -0.5) -- ++ (1.5, 0) -- ++ (0.5, 0.5) -- ++ (0.5, 0);
+                \draw[wire, rounded corners] (1, 1.5) -- ++ (0.5, 0) -- ++ (0.5, -0.5) -- ++ (1.5, 0) -- ++ (0.5, 0.5) -- ++ (0.5, 0);
+                \draw[wire, rounded corners] (1, 2) -- ++ (3.5, 0);
+                
+                \draw[symmetriser] (0.5, 2.15) rectangle (1, 0.85);
+                \draw[symmetriser] (0.5, 0.65) rectangle (1, -0.15);
+                \draw[antisymmetriser] (2.5, 2.15) rectangle (3, 1.35);
+                \draw[antisymmetriser] (2.5, 1.15) rectangle (3, 0.35);
+            \end{tikzpicture}
+        \end{equation}
+    \end{exm}
+    
     \subsection{Garnir Relations}
+    The standard Young tableaux of a given shape, or rather the associated Young projectors, form a basis for the Young projectors formed from Young tableaux of that shape.
+    The \defineindex{Garnir relations} give us a way of taking a projector corresponding to a nonstandard Young tableau and writing it as a sum of projectors corresponding to standard Young tableaux of the same shape.
+    While the relations are on the level of the Young projectors, which are elements of the group algebra, \(\complex[\symmetricGroup]\), they are applied on the level of the Young tableaux.
+    So just keep in mind that whenever we write a sum of two Young tableau the sum is actually happening one layer down in the group algebra.
+    
+    We start with a nonstandard \(k\) box Young tableau.
+    The Garnir relations are best expressed through an example.
+    We'll start with the \(k = 11\) nonstandard Young tableau
+    \begin{equation}
+        Y = \ytableaushort{1256,38{10},47,9{11}}.
+    \end{equation}
+    Since a Young projector involves symmetrising over a row the order of the numbers in a row is not important, so we can always sort them in increasing order.
+    The numbers in each row are already sorted in increasing order here, but if they weren't then doing so would be the first step.
+    The first step to applying the Garnir relations is to identify the first space, from top left going left to right top to bottom, where the tableau fails to be standard.
+    In our example this is the 8 which is above a 7.
+    We then highlight from this point to the point directly below it:
+    \begin{equation}
+        \begin{ytableau}
+            1 & 2 & 5 & 6\\
+            3 & *(light highlight) 8 & *(light highlight) 10\\
+            *(light highlight) 4 & *(light highlight) 7\\
+            9 & 11
+        \end{ytableau}
+    \end{equation}
+    This gives us a strip of values, \(\tuple{8,10,4,7}\).
+    However, we want to think of this strip not by the numbers in the boxes but the numbers of the boxes when labelled \(1\) to \(k\):
+    \begin{equation}
+        \ytableaushort{1234,567,89,{10}{11}}.
+    \end{equation}
+    So the boxes highlighted above are \(6\), \(7\), \(8\), and \(9\).
+    
+    The next step is to perform all permutations of this strip which give distinct Young projectors, which means that swaps within a row are all the same.
+    In this case these swaps are
+    \begin{equation}
+        \cycle{6,8}, \quad \cycle{6,9}, \quad \cycle{7,8}, \quad \cycle{7,9}, \qand \cycle{6,8}\cycle{7,9}.
+    \end{equation}
+    These permutations act on the Young tableau by permuting the values in the boxes with these numbers.
+    This gives us the tableaux
+    \ytableausetup{smalltableaux}
+    \begin{alignat}{3}
+        \cycle{6,8} \action Y &=
+        \ytableaushort{1256,34{10},87,9{11}}, \qquad &
+        \cycle{6,8} \action Y &=
+        \ytableaushort{1256,37{10},48,9{11}}, \qquad &
+        \cycle{7,8} \action Y &=
+        \ytableaushort{1256,384,{10}7,9{11}}, \notag\\
+        \cycle{7,9} \action Y &=
+        \ytableaushort{1256,387,4{10},9{11}}, \qquad &
+        \cycle{6,8}\cycle{7,9} \action Y &=
+        \ytableaushort{1256,347,8{10},9{11}}.
+    \end{alignat}
+    We can again sort all of the rows, giving
+    \begin{alignat}{3}
+        \cycle{6,8} \action Y &=
+        \ytableaushort{1256,34{10},78,9{11}}, \qquad &
+        \cycle{6,8} \action Y &=
+        \ytableaushort{1256,37{10},48,9{11}}, \qquad &
+        \cycle{7,8} \action Y &=
+        \ytableaushort{1256,348,7{10},9{11}}, \notag\\
+        \cycle{7,9} \action Y &=
+        \ytableaushort{1256,378,4{10},9{11}}, \qquad &
+        \cycle{6,8}\cycle{7,9} \action Y &=
+        \ytableaushort{1256,347,8{10},9{11}}.
+    \end{alignat}
+    The Garnir relations then tell us that
+    \begin{align}
+        0 &= Y + \cycle{6,8} \action Y + \cycle{6,8} \action Y + \cycle{7,8} \action Y + \cycle{7,9} \action Y + \cycle{6,8}\cycle{7,9} \action Y\\
+        &= \ytableaushort{1256,38{10},47,9{11}} + \ytableaushort{1256,34{10},78,9{11}} + \ytableaushort{1256,37{10},48,9{11}} + \ytableaushort{1256,348,7{10},9{11}} + \ytableaushort{1256,378,4{10},9{11}} + \ytableaushort{1256,347,8{10},9{11}}. \notag
+    \end{align}
+    Thus, we can write the initial nonstandard Young tableau as
+    \begin{align}
+        Y &= -\cycle{6,8} \action Y - \cycle{6,8} \action Y - \cycle{7,8} \action Y - \cycle{7,9} \action Y - \cycle{6,8}\cycle{7,9} \action Y\\
+        &= -\ytableaushort{1256,34{10},78,9{11}} - \ytableaushort{1256,37{10},48,9{11}} - \ytableaushort{1256,348,7{10},9{11}} - \ytableaushort{1256,378,4{10},9{11}} - \ytableaushort{1256,347,8{10},9{11}}.
+    \end{align}
+    
+    At this point there are two possibilities, if all of the Young tableaux appearing on the right are standard, as is the case here, then we are finished.
+    If one or more is not standard then the first point at which it fails to be standard will have moved right and/or down, meaning it is, in a sense, closer to being standard.
+    We can then apply the Garnir relations to this tableau and the failure point will once again move right and/or down.
+    Since tableau are finite eventually this process must terminate and we will be left with only standard tableau.
+    
+    To summarise, the process of writing a nonstandard tableau in terms of standard tableau is as follows:
+    \begin{enumerate}
+        \item Sort the rows of the tableau into ascending order, if the result is a standard tableau stop here.
+        \item Identify the first point from the top left going left to right and top to bottom where the tableau fails to be standard.
+        \item Identify a strip going from this point to the box under this point.
+        \item Apply all permutations to this strip which result in distinct tableau.
+        \item The original tableau is then the negative of the sum of these permuted tableau.
+        \item If any of the tableau in this sum are nonstandard recursively apply the Garnir relations.
+        When no nonstandard tableau remain stop.
+    \end{enumerate}
+    Another example, where the Garnir relations are applied recursively, is in \cref{app:garnir example}
+    
     \subsection{Orthogonal Projectors}
     
+    % Appdendix
+    \appendixpage
+    \begin{appendices}
+        \chapter{Garnir Relations Example}\label{app:garnir example}
+        \section{Recursive Application}
+        Consider the Young tableau
+        \begin{equation}
+            Y = \ytableaushort{14,35,2}.
+        \end{equation}
+        The rows are already sorted.
+        The problem strip starts with the 3:
+        \begin{equation}
+            \begin{ytableau}
+                1 & 4\\
+                *(light highlight) 3 & *(light highlight) 5\\
+                *(light highlight) 2
+            \end{ytableau}
+        \end{equation}
+        The box numbers are
+        \begin{equation}
+            \ytableaushort{12,34,5},
+        \end{equation}
+        so the boxes in the strip are numbers 3, 4, and 5.
+        We need to consider the permutations \(\cycle{3,5}\) and \(\cycle{4,5}\), giving
+        \begin{equation}
+            \cycle{3,5} \action Y = \ytableaushort{14,25,3}, \qqand \cycle{4,5} \action Y = \ytableaushort{14,32,5}.
+        \end{equation}
+        Sorting the rows we get the tableaux
+        \begin{equation}
+            \ytableaushort{14,25,3}, \qqand \ytableaushort{14,23,5}.
+        \end{equation}
+        Thus
+        \begin{equation}
+            Y = \ytableaushort{14,35,2} = -\ytableaushort{14,25,3} - \ytableaushort{14,23,5}.
+        \end{equation}
+        The first tableau is standard, but the second isn't, we have a four above a 3.
+        So, we need to recursively apply the Garnir relations.
+        
+        Starting again with
+        \begin{equation}
+            \tilde{Y} = \ytableaushort{14,23,5}
+        \end{equation}
+        we identify the problem strip:
+        \begin{equation}
+            \begin{ytableau}
+                1 & *(light highlight) 4\\
+                *(light highlight) 2 & *(light highlight) 3\\
+                5
+            \end{ytableau}
+        \end{equation}
+        Notice that the problem point has moved right compared to the starting tableau \(Y\).
+        We need to consider the permutations \(\cycle{2,3}\) and \(\cycle{2,4}\).
+        Applying these gives
+        \begin{equation}
+            \cycle{2,3} \action \tilde{Y} = \ytableaushort{12,43,5}, \qqand \cycle{2,4} \action \tilde{Y} = \ytableaushort{13,24,5}.
+        \end{equation}
+        Sorting the rows gives
+        \begin{equation}
+            \ytableaushort{12,34,5}, \qqand \ytableaushort{13,24,5}.
+        \end{equation}
+        Hence, we have
+        \begin{equation}
+            \tilde{Y} = -\ytableaushort{12,34,5} - \ytableaushort{13,24,5}.
+        \end{equation}
+        
+        Going back to our original tableau we can express \(Y\) as a sum of standard tableaux:
+        \begin{align}
+            Y &= - \ytableaushort{14,25,3} - \ytableaushort{14,23,5}\\
+            &= -\ytableaushort{14,25,3} - \left( -\ytableaushort{12,34,5} - \ytableaushort{13,24,5} \, \right)\\
+            &= -\ytableaushort{14,25,3} + \ytableaushort{12,34,5} + \ytableaushort{13,24,5}.
+        \end{align}
+        Notice that since the Young projectors, denoted here by the corresponding Young tableaux, are elements of an algenbra, \(\complex[\symmetricGroup[5]]\), we can do all of the expected algebra with them such as distributing scalars across brackets since \(\complex[\symmetricGroup[5]]\) is a vector space.
+    \end{appendices}
+
     \backmatter
+    \printbibliography
     %    \renewcommand{\glossaryname}{Acronyms}
     %    \printglossary[acronym]
     \printindex
