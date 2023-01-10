@@ -7,6 +7,7 @@
 
 %% Packages
 \usepackage{csquotes}
+\usepackage{tensor}
 \usepackage{ytableau}
 \ytableausetup{centertableaux}
 
@@ -107,6 +108,9 @@ noabbrev
 \newcommand{\isomorphic}{\cong}
 \newcommand{\projector}[1]{\symbfup{P}_{#1}}
 \newcommand{\hooknumber}[1]{\abs{#1}}
+\newcommand{\dual}[1]{{#1^{*}}}
+\newcommand{\lorentzGroup}{\specialOrthogonal^+(1, 3)}
+\newcommand{\minkowskiSpace}{\reals^{1,3}}
 
 
 \includeonly{}
@@ -150,7 +154,7 @@ noabbrev
     We follow the common abuse of terminology and refer to \(G\) alone as the group with the operation left implicit.
     We will also write most group operations as juxtaposition, writing \(xy\) for \(x \cdot y\).
     
-    The prototype for a group is the \defineindex{symmetric group} on \(n\) objects, \(\symmetricGroup\).
+    The prototype for a group is the \defineindex{symmetric group} on \(n\) objects, \(\symmetricGroup\) \cite{james-rep-symmetric-group}.
     This is defined as the set
     \begin{equation}
         \symmetricGroup \coloneqq \{ \sigma \colon \{1, \dotsc, n\} \to \{1, \dotsc, n\} \mid \sigma \text{ is a bijection} \}
@@ -158,6 +162,7 @@ noabbrev
     with function composition as the group operation.
     We will use cycle notation for elements of \(\symmetricGroup\), where a cycle sends each element to the next in the list and the last element in the list to the first.
     For example, \(\cycle{1,3,4}\) sends \(1\) to \(3\), \(3\) to \(4\), and \(4\) to \(1\).
+    In this notation the identity is the empty cycle, \(\cycle{}\).
     
     Another important collection of groups are various collections of matrices with matrix multiplication as the group operation.
     In this case the group identity is the identity matrix of  the appropriate dimension, \(\identityMatrix\).
@@ -171,6 +176,11 @@ noabbrev
         \item \defineindex{unitary group} \(\unitary(n) \coloneqq \{U \in \matrices{n}{\complex} \mid U^\hermit U = \identityMatrix \}\);
         \item \defineindex{special unitary group} \(\specialUnitary(n) \coloneqq \{U \in \unitary(n) \mid \det U = 1\}\).
     \end{itemize}
+    These matrix groups are actually examples of a Lie group:
+    \begin{dfn}{Lie Group}{}
+        A \defineindex{Lie group}, \(G\), is a group which is also a manifold in a compatible way \cite{san-martin-lie-groups}.
+        By this we mean that the product map \(\cdot \colon G \times G \to G\) is analytic.
+    \end{dfn}
     
     Most of the time when considering a group we think of the symmetries it represents being applied to some object.
     This leads to the following definition.
@@ -296,22 +306,54 @@ noabbrev
     
     \begin{dfn}{Irreducible Representation}{}
         Let \(G\) be a group and \((\rho, V)\) a representation of \(G\).
-        We say that \((\rho, V)\) is an \defineindex{irreducible representation}, or irrep, if \(V\) has no \(G\)-invariant subspaces.
+        We say that \((\rho, V)\) is an \defineindex{irreducible representation}, or irrep, if \(V\) has no \(G\)-invariant subspaces \cite{hamermesh}.
         That is, there is no \(W \subset V\) such that \(g \action w \in W\) for all \(w \in W\).
     \end{dfn}
 
     \begin{dfn}{Decomposable Representation}{}
         Let \(G\) be a group and \((\rho, V)\) a representation of \(G\).
-        We say that \((\rho, V)\) is a \defineindex{decomposable representation} if \(\{\rho(g)\}\) can be simultaneously diagonalised.
+        We say that \((\rho, V)\) is a \defineindex{decomposable representation} if \(\{\rho(g)\}\) can be simultaneously diagonalised \cite{hamermesh}.
         In other words, there exist representations \((\rho_i, V_i)\) such that \(\rho = \bigoplus_i \rho_i\) and \(V = \bigoplus_i V_i\).
     \end{dfn}
     
-    For a finite group, \(G\), and a representation space over \(\reals\) or \(\complex\) all indecomposable representations are irreducible.
+    For a finite group, \(G\), and a representation space over \(\reals\) or \(\complex\) all indecomposable representations are irreducible \cite{hamermesh}.
     This also the case if \(G\) is compact.
     We will assume that all indecomposable are irreducible and vice versa.
     
+    We are now in a position to make the physicist definition of a tensor more  precise.
+    \begin{dfn}{Tensor}{}
+        Let \(G\) be a group and \(\rho \colon G \to \generalLinear(V)\),
+        and denote by \(\dual{V}\) the dual space to \(V\).
+        A \defineindex{tensor}, \(T \in V^p \otimes \dual{V}^q \), is an object with components \(\tensor{T}{^{a_1\dotso a_q}_{b_1 \dotso b_p}}\), which transform under the action of \(g \in G\) according to
+        \begin{equation*}
+            \tensor{{T'}}{^{a_1\dotso a_q}_{b_1 \dotso b_p}} = \tensor{\rho(g)}{^{a_1}_{c_1}} \dotsm \tensor{\rho(g)}{^{a_q}_{c_q}} \tensor{\rho(g)}{_{b_1}^{d_q}} \dotsm \tensor{\rho(g)}{_{b_p}^{d_p}} \tensor{T}{^{c_1\dotso c_q}_{d_1 \dotso d_p}}
+        \end{equation*}
+        where we employ the Einstein summation convention and sum over repeated indices \cite[18]{cvitanovic}.
+    \end{dfn}
+    \begin{exm}{}{}
+        In classical mechanics we consider Cartesian tensors, which transform under the rotation group \(\specialOrthogonal(3)\).
+        For example, if \(R \in \specialOrthogonal(3)\) is a rotation matrix then \(\vv{x} \in \reals^3\) is a vector if it has components transforming according to
+        \begin{equation}
+            x_i = R_{ij}x_j.
+        \end{equation}
+        The moment of inertia tensor, \(I\), has components \(I_{ij}\) and transforms as
+        \begin{equation}
+            I'_{ij} = R_{ik}R_{jl}I_{kl}.
+        \end{equation}
+        
+        In relativity we consider Lorentz tensors, which transform under the Lorentz group \(\lorentzGroup\).
+        For example, if \(\Lambda \in \lorentzGroup\) is a Lorentz transformation then \(x \in \minkowskiSpace\) is a vector if it has components transforming according to
+        \begin{equation}
+            x^\mu = \tensor{\Lambda}{^\mu_\nu}x^\nu.
+        \end{equation}
+        The stress-energy tensor, \(T\), has components \(T^{\mu\nu}\) which transform as
+        \begin{equation}
+            T'^{\mu\nu} = \tensor{\Lambda}{^\mu_\rho}\tensor{\Lambda}{^\nu_\sigma} T^{\rho\sigma}.
+        \end{equation}
+    \end{exm}
+    
     \section{Birdtracks}
-    A permutation in \(\symmetricGroup\) can pictured with a \defineindex{braid diagram}, which tracks \(n\) elements swapping through wires connecting inputs and outputs.
+    A permutation in \(\symmetricGroup\) can pictured with a \defineindex{braid diagram}, which tracks \(n\) elements swapping through wires connecting inputs and outputs \cite[49]{cvitanovic}.
     For example, the permutation \(\cycle{1,2,4} \in \symmetricGroup[5]\) can be drawn, including labels normally left implicit, as
     \begin{equation}
         \tikzsetnextfilename{math-prelims-example-braid}
@@ -362,12 +404,12 @@ noabbrev
                 \draw[wire, rounded corners] (0, 1.5) -- (0.5, 1.5) -- (1.5, 0.5) -- (2.5, 0.5);
             \end{scope}
             \begin{scope}[xshift=6cm]
-                \draw[wire] (0, 0) -- (1.5, 0);
-                \draw[underwire, rounded corners] (0, 0.5) -- (0.5, 0.5) -- (1, 1) -- (1.5, 1);
-                \draw[wire, rounded corners] (0, 0.5) -- (0.5, 0.5) -- (1, 1) -- (1.5, 1);
-                \draw[wire, rounded corners] (0, 1) -- (0.5, 1) -- (1, 0.5) -- (1.5, 0.5);
-                \draw[wire] (0, 1.5) -- (1.5, 1.5);
-                \draw[wire] (0, 2) -- (1.5, 2);
+                \draw[wire] (0, 0) -- (1.6, 0);
+                \draw[underwire, rounded corners] (0, 0.5) -- (0.5, 0.5) -- (1, 1) -- (1.6, 1);
+                \draw[wire, rounded corners] (0, 0.5) -- (0.5, 0.5) -- (1, 1) -- (1.6, 1);
+                \draw[wire, rounded corners] (0, 1) -- (0.5, 1) -- (1, 0.5) -- (1.6, 0.5);
+                \draw[wire] (0, 1.5) -- (1.6, 1.5);
+                \draw[wire] (0, 2) -- (1.6, 2);
             \end{scope}
         \end{tikzpicture}
         \ .
@@ -391,7 +433,7 @@ noabbrev
         \ .
     \end{equation}
     
-    A common operation on tensors is to symmetrise or antisymmetrise over a certain set of indices.
+    A common operation on tensors is to symmetrise or antisymmetrise over a certain set of indices \cite[50--51]{cvitanovic}.
     Denoting by \(S_{i_1\dotso i_k}\) the symmetriser over the indices \(i_1, \dotsc, i_k\) this symmetriser is given by
     \begin{equation}
         S_{i_1 \dotso i_k} \coloneqq \frac{1}{k!} \sum_{\sigma \in \symmetricGroup[k]} \sigma,
@@ -444,8 +486,6 @@ noabbrev
         \end{tikzpicture}
         .
     \end{align}
-    
-    \section{Representations of the Symmetric Group}
     
     \chapter{Young Tableau}
     \section{What are Young Tableau}
@@ -675,7 +715,7 @@ noabbrev
     \end{enumerate}
     Another example, where the Garnir relations are applied recursively, is in \cref{app:garnir example}
     
-    \subsection{Orthogonal Projectors}
+    \section{Representations of The Symmetric Group}
     
     % Appdendix
     \appendixpage
