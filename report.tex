@@ -18,6 +18,7 @@
 \tikzexternalize[prefix=tikz-external/]
 % Other libraries
 
+\usepackage{tikz-cd}
 
 \RequirePackage[%
 sorting=none,  % Don't sort the references, they will appear in the order they are first cited
@@ -26,6 +27,7 @@ giveninits=true,  % style author names as J. Doe
 language=british  % Make dates dd/mm/yyyy
 ]{biblatex}
 \addbibresource{ref.bib}
+\usepackage{xurl}
 
 % References, should be last things loaded
 \usepackage[pdfauthor={Willoughby Seago},pdftitle={MPhys Report: Computational Group Theory},pdfkeywords={group theory, representation theory, birdtracks, Lie theory},pdfsubject={Lie Groups, Representation Theory}]{hyperref}  % Should be loaded second last (cleveref last)
@@ -137,13 +139,13 @@ noabbrev
     
     \section{Groups}
     Groups capture the idea of a symmetry in a precise and mathematical way.
-    Intuitively a symmetry is something we can do to a system which leaves the system unchanged, or invariant, under that symmetry.
+    Intuitively a symmetry is something we can do to a system which leaves the system unchanged, or \defineindex{invariant}, under that symmetry.
     We can abstract the notion of a symmetry through four requirements.
     Given some collection of symmetries there must be a way to combine them, do nothing, and undo any of the symmetries, and the final requirement is that the way we use brackets doesn't matter.
     This leads to the following definition.
     
     \begin{dfn}{Group}{}
-        A \defineindex{group}, \((G, \cdot)\), is a set, \(G\), and a binary operation, \(\cdot \colon G \times G \to G\) such that the following axioms are satisfied:
+        A \defineindex{group}, \((G, \cdot)\), is a set, \(G\), and a binary operation, \(\cdot \colon G \times G \to G\) such that the following axioms are satisfied \cite{riley-hobson-bence}:
         \begin{description}
             \item[Identity]\index{identity} there exists some distinguished element, \(\identity \in G\), such that for all \(x \in G\) we have \(\identity \cdot x = x \cdot \identity = x\);
             \item[Inverse]\index{inverse} for all \(x \in G\) there exists some \(x^{-1} \in G\) such that \(x \cdot x^{-1} = x^{-1} \cdot x = \identity\);
@@ -164,10 +166,10 @@ noabbrev
     For example, \(\cycle{1,3,4}\) sends \(1\) to \(3\), \(3\) to \(4\), and \(4\) to \(1\).
     In this notation the identity is the empty cycle, \(\cycle{}\).
     
-    Another important collection of groups are various collections of matrices with matrix multiplication as the group operation.
+    Another important family of groups are various collections of matrices with matrix multiplication as the group operation.
     In this case the group identity is the identity matrix of  the appropriate dimension, \(\identityMatrix\).
     Let \(\matrices{n}{\field}\) denote the set of \(n \times n\) matrices with entries in \(\field\).
-    The following are all groups under matrix multiplication:
+    The following are all groups under matrix multiplication \cite{allanach}:
     \begin{itemize}
         \item \defineindex{general linear group} \(\generalLinear(n, \field) \coloneqq \{M \in \matrices{n}{\field} \mid M \text{ is invertible} \}\);
         \item \defineindex{special linear group} \(\specialLinear(n, \field) \coloneqq \{M \in \generalLinear(n, \field) \mid \det M = 1\}\);
@@ -187,7 +189,7 @@ noabbrev
     
     \begin{dfn}{Group Action}{}
         Let \(G\) be a group and \(X\) a set.
-        A (left) \defineindex{group action} of \(G\) on \(X\) is a function \(\varphi \colon G \times X \to X\) such that
+        A (left) \defineindex{group action} of \(G\) on \(X\) is a function \(\varphi \colon G \times X \to X\) such that \cite[713]{hassani}
         \begin{description}
             \item[Identity] for all \(x \in X\) we have \(\varphi(\identity, x) = x\),
             \item[Compatibility] for all \(g, h \in G\) and \(x \in X\) we have \(\varphi(g, \varphi(h, x)) = \varphi(gh, x)\) where \(gh\) is the product of \(g\) and \(h\) in \(G\).
@@ -209,7 +211,7 @@ noabbrev
     
     \begin{dfn}{Morphisms}{}
         Let \(G\) and \(H\) be groups.
-        A \defineindex{group homomorphism} is a map \(\varphi \colon G \to H\) such that \(\varphi(gg') = \varphi(g)\varphi(g')\) for all \(g, g' \in G\).
+        A \defineindex{group homomorphism} is a map \(\varphi \colon G \to H\) such that \(\varphi(gg') = \varphi(g)\varphi(g')\) for all \(g, g' \in G\) \cite[705]{hassani}.
         If \(\varphi\) is invertible then we call it an \defineindex{isomorphism}.
         If there is an isomorphism between \(G\) and \(H\) we say that \(G\) and \(H\) are \defineindex{isomorphic}, and denote this \(G \isomorphic H\).
     \end{dfn}
@@ -231,8 +233,8 @@ noabbrev
         \begin{equation}
             \left( \sum_{g \in G} r_g g \right) \left( \sum_{h \in G} s_h h \right) \coloneqq \sum_{g, h \in G}^{g} r_g s_h gh
         \end{equation}
-        where within each the operations occur either within \(R\) or within \(G\).
-        If \(R\) is a field then \(R[G]\) is an associative algebra (a vector space with an associative product).
+        with the product \(r_gs_h\) computed in \(R\) and the product \(gh\) computed in \(G\).
+        If \(R\) is a field then \(R[G]\) is an associative algebra (a vector space with an associative product), called the \defineindex{group algebra} \cite[740]{hassani}.
     \end{dfn}
     
     The most common case of a group algebra is the group algebra \(\complex[G]\) for some arbitrary group, \(G\).
@@ -240,7 +242,7 @@ noabbrev
     \section{Representations}
     \begin{dfn}{Representation}{}
         Let \(G\) be a group.
-        A \defineindex{group representation}, \((\rho, V)\), is a pair consisting of a vector space, \(V\), called the representation space, and a homomorphism \(\rho \colon G \to \generalLinear(V)\).
+        A \defineindex{group representation}, \((\rho, V)\), is a pair consisting of a vector space, \(V\), called the representation space, and a homomorphism \(\rho \colon G \to \generalLinear(V)\) \cite[726]{hassani}.
         Here \(\generalLinear(V) \coloneqq \{T \colon V \to V \mid T \text{ is linear}\}\) is the group of automorphisms of \(V\) with function composition as the group operation.
         Fixing some basis for \(V\) we can identify \(\generalLinear(V) \isomorphic \generalLinear(\dim V, \field)\) if \(V\) is a \(\field\)-vector space.
     \end{dfn}
@@ -346,7 +348,7 @@ noabbrev
         \begin{equation}
             x^\mu = \tensor{\Lambda}{^\mu_\nu}x^\nu.
         \end{equation}
-        The stress-energy tensor, \(T\), has components \(T^{\mu\nu}\) which transform as
+        The energy-momentum tensor, \(T\), has components \(T^{\mu\nu}\) which transform as
         \begin{equation}
             T'^{\mu\nu} = \tensor{\Lambda}{^\mu_\rho}\tensor{\Lambda}{^\nu_\sigma} T^{\rho\sigma}.
         \end{equation}
@@ -491,7 +493,7 @@ noabbrev
     \section{What are Young Tableau}
     \begin{dfn}{Partition}{}
         Let \(k \in \naturals\).
-        A \defineindex{partition} of \(k\) is a tuple, \(\tuple{\lambda_1, \dotsc, \lambda_n}\) such that \cite{cvitanovic}
+        A \defineindex{partition} of \(k\) is a tuple, \(\tuple{\lambda_1, \dotsc, \lambda_n}\) such that \cite[720]{hassani}
         \begin{equation}
             k = \sum_{i = 1}^{n} \lambda_i.
         \end{equation}
@@ -501,7 +503,7 @@ noabbrev
     For example, \(\tuple{1,5,3}\) is a partition of 9, this is not ordered, the equivalent ordered partition is \(\tuple{5,3,1}\).
     
     \begin{dfn}{Young Diagram}{}
-        Given an ordered partition \(\tuple{\lambda_1, \dotsc, \lambda_n}\) of some \(k \in \naturals\) the \defineindex{Young diagram} is formed from a row of \(\lambda_1\) boxes above a row of \(\lambda_2\) boxes and so on down to a row of \(\lambda_n\) boxes, all aligned to the left \cite{cvitanovic}.
+        Given an ordered partition \(\tuple{\lambda_1, \dotsc, \lambda_n}\) of some \(k \in \naturals\) the \defineindex{Young diagram} is formed from a row of \(\lambda_1\) boxes above a row of \(\lambda_2\) boxes and so on down to a row of \(\lambda_n\) boxes, all aligned to the left \cite[87]{cvitanovic}.
     \end{dfn}
     
     For example, the ordered partitions of four are \(\tuple{4}\), \(\tuple{3,1}\), \(\tuple{2,2}\), \(\tuple{2,1,1}\), and \(\tuple{1,1,1,1}\).
@@ -523,7 +525,7 @@ noabbrev
     
     \begin{dfn}{Hook Number}{}
         Given a Young diagram, \(Y\), the \defineindex{hook length} of a box is the number of boxes to the right of that box, plus the number of boxes below that box, plus 1 for the box itself.
-        The \defineindex{hook number}, \(\hooknumber{Y}\), is the product of the hook lengths.
+        The \defineindex{hook number}, \(\hooknumber{Y}\), is the product of the hook lengths \cite[88]{cvitanovic}.
     \end{dfn}
     \begin{exm}{}{}
         Consider the Young diagram given by the partition \(\tuple{3,2}\):
@@ -570,7 +572,7 @@ noabbrev
     
     \section{Young Projectors}
     \begin{dfn}{Young Projector}{}
-        Given a \(k\) box Young tableau, \(Y\), with \(r\) rows and \(c\) columns the \defineindex{Young projector}, \(\projector{Y}\) associated with \(Y\) is given by the following procedure \cite{cvitanovic}:
+        Given a \(k\) box Young tableau, \(Y\), with \(r\) rows and \(c\) columns the \defineindex{Young projector}, \(\projector{Y}\) associated with \(Y\) is given by the following procedure \cite[91]{cvitanovic}:
         \begin{enumerate}
             \item Symmetrise over the numbers in each row.
             \item Antisymmetrise over the numbers in each column.
@@ -622,6 +624,7 @@ noabbrev
         \end{equation}
     \end{exm}
     
+    % TODO: Citations for this section
     \subsection{Garnir Relations}
     The standard Young tableaux of a given shape, or rather the associated Young projectors, form a basis for the Young projectors formed from Young tableaux of that shape.
     The \defineindex{Garnir relations} give us a way of taking a projector corresponding to a nonstandard Young tableau and writing it as a sum of projectors corresponding to standard Young tableaux of the same shape.
@@ -716,6 +719,252 @@ noabbrev
     Another example, where the Garnir relations are applied recursively, is in \cref{app:garnir example}
     
     \section{Representations of The Symmetric Group}
+    Given a Young tableau, for example
+    \begin{equation}
+        Y = \ytableaushort{124,35},
+    \end{equation}
+    we can identify a permutation, \(\sigma\), which acts on the Young tableau of the same shape but with all numbers in order from left to right top to bottom, which we'll call the \defineindex{ordered tableau} of this shape, by permuting the boxes based on their numbers to produce \(Y\), that is
+    \begin{equation}
+        \ytableaushort{124,35} = \sigma \action \ytableaushort{123,45},
+    \end{equation}
+    In our example \(\sigma = \cycle{3,4}\).
+    In this way we get a one-to-one correspondence between \(n\) box Young tableaux and permutations in \(\symmetricGroup\).
+    
+    Representations of \(\symmetricGroup\) can be labelled by ordered partitions of \(n\).
+    This is because for a finite group there is a one-to-one correspondence between irreducible representations and conjugacy classes \cite{zhenheng}, and the conjugacy classes are grouped by cycle type \cite{conjugacy-classes-cycle-types}, which is simply the length of the cycles, for example \(\cycle{1,2,3}\cycle{4,5}\) has cycle type \(\tuple{3,2}\) in \(\symmetricGroup[5]\), or viewed in \(\symmetricGroup[7]\) we can write it as \(\cycle{1,2,3}\cycle{4,5}\cycle{6}\cycle{7}\), in which case it has cycle type \(\tuple{3,2,1,1}\).
+    So, we have a one-to-one correspondence between partitions and conjugacy classes, a one-to-one correspondence between conjugacy classes and representations, and a one-to-one correspondence between partitions and Young diagrams.
+    Hence, there is a one-to-one correspondence between \(n\) box Young diagrams and representations of \(\symmetricGroup\) allowing us to label representations of \(\symmetricGroup\) by \(n\) box Young diagrams.
+    This is summarised in \cref{fig:one-to-one relations in Sn}
+    
+    \begin{figure}
+        \tikzexternaldisable
+        \begin{tikzcd}
+            \text{irreps of \(\symmetricGroup\)} \arrow[r, <->] \arrow[d, <->] & \text{conjugacy classes of \(\symmetricGroup\)} \arrow[d, <->]\\
+            \text{\(n\) box Young diagrams} \arrow[r, <->] & \text{partitions of \(n\)}
+        \end{tikzcd}
+        \begin{tikzcd}
+            \text{elements of \(\symmetricGroup\)} \arrow[r, <->] & \text{\(n\) box Young tableau of a given shape}
+        \end{tikzcd}
+        \tikzexternalenable
+        \caption{One-to-one relations between various concepts relating to Young tableaux and representations of \(S_n\).}
+        \label{fig:one-to-one relations in Sn}
+    \end{figure}
+    
+    The question now is given some \(\sigma \in \symmetricGroup\) and some \(n\) box Young diagram, \(Y\), how do we find the matrix corresponding to \(\sigma\) in the representation labelled by \(Y\)?
+    We'll follow demonstrate the procedure with the example \(\sigma = \cycle{1,3}\) and the representation labelled by the Young diagram
+    \begin{equation}
+        \ydiagram{2,1}.
+    \end{equation}
+    Start by identifying this Young diagram with the ordered Young tableau of the same shape:
+    \begin{equation}
+        Y = \ytableaushort{12,3}.
+    \end{equation}
+    The dimension of the representation is given by the number of standard tableaux of the same shape as \(Y\), in this example there are two:
+    \begin{equation}
+        \ytableaushort{12,3}, \qqand \ytableaushort{13,2}.
+    \end{equation}
+    From each of these we can identify a standard permutation, the permutation giving the standard tableau from the ordered tableau, in this case the standard permutations are \(\cycle{}\) and \(\cycle{2,3}\).
+    We need the Young projector associated with \(Y\):
+    \begin{equation}
+        \projector{Y} = \frac{4}{3} \,
+        \tikzsetnextfilename{rep-of-Sn-example-Young-projector}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (0, 1) -- (0.5, 1);
+            \draw[wire] (0, 0.5) -- (0.5, 0.5);
+            \draw[wire] (1, 1) -- (2, 1);
+            \draw[wire] (2.5, 1) -- (3.5, 1);
+            \draw[wire, rounded corners] (0, 0) -- (1.5, 0) -- ++ (0.5, 0.5) -- ++ (0.5, 0);
+            \draw[wire, rounded corners] (2.5, 0.5) -- ++ (0.5, -0.5) -- ++ (0.5, 0);
+            \draw[underwire, rounded corners] (1, 0.5) -- ++ (0.5, 0) -- ++ (0.5, -0.5) -- ++ (0.5, 0) -- ++ (0.5, 0.5) -- ++ (0.5, 0);
+            \draw[wire, rounded corners] (1, 0.5) -- ++ (0.5, 0) -- ++ (0.5, -0.5) -- ++ (0.5, 0) -- ++ (0.5, 0.5) -- ++ (0.5, 0);
+            \draw[symmetriser] (0.5, 0.25) rectangle (1, 1.25);
+            \draw[antisymmetriser] (2, 0.25) rectangle (2.5, 1.25);
+        \end{tikzpicture}
+        =
+        \tikzsetnextfilename{rep-ofSn-example-Young-projector-short-form}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (0, 1) -- (0.5, 1);
+            \draw[wire] (0, 0.5) -- (0.5, 0.5);
+            \draw[wire] (0, 0) -- (0.5, 0);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    If we act on this with our two standard permutations we get
+    \begin{equation}
+        \cycle{} \action \projector{Y} = \projector{Y} = \ve{1}, \qqand \cycle{2,3} \action \projector{Y} = 
+        \tikzsetnextfilename{rep-of-Sn-second-basis-element}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (-0.5, 1) -- (0, 1) -- (0.5, 1);
+            \draw[wire, rounded corners] (-0.5, 0) -- (-0.25, 0) -- (0.25, 0.5) -- (0.5, 0.5);
+            \draw[underwire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        = \ve{2}.
+    \end{equation}
+    We take these two projectors to be the basis vectors in our representation space.
+    We then act on them with \(\sigma = \cycle{1,3}\), giving
+    \begin{align}
+        \cycle{1,3} \action \ve{1} &=
+        \tikzsetnextfilename{rep-of-Sn-step-1}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire, rounded corners] (-0.5, 1) -- (-0.25, 1) -- (0.25, 0) -- (0.5, 0);
+            \draw[underwire] (-0.5, 0.5) -- (0.5, 0.5);
+            \draw[wire] (-0.5, 0.5) -- (0.5, 0.5);
+            \draw[underwire, rounded corners] (-0.5, 0) -- (-0.25, 0) -- (0.25, 1) -- (0.5, 1);
+            \draw[wire, rounded corners] (-0.5, 0) -- (-0.25, 0) -- (0.25, 1) -- (0.5, 1);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        =
+        \tikzsetnextfilename{rep-of-Sn-step-2}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (0, 1) -- (0.5, 1);
+            \draw[wire] (0, 0.5) -- (0.5, 0.5);
+            \draw[wire] (0, 0) -- (0.5, 0);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{32,1}};
+        \end{tikzpicture}
+        =
+        \tikzsetnextfilename{rep-of-Sn-step-3}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (0, 1) -- (0.5, 1);
+            \draw[wire] (0, 0.5) -- (0.5, 0.5);
+            \draw[wire] (0, 0) -- (0.5, 0);
+            \draw[wire] (2.5, 1) -- (3, 1);
+            \draw[wire] (2.5, 0.5) -- (3, 0.5);
+            \draw[wire] (2.5, 0) -- (3, 0);
+            \draw (0.5, -0.25) rectangle (2.5, 1.25);
+            \node at (1.5, 0.5) {-\,\ytableaushort{12,3} \, - \ytableaushort{13,2}};
+        \end{tikzpicture}
+        \notag\\
+        &= -
+        \tikzsetnextfilename{rep-of-Sn-step-4}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (0, 1) -- (0.5, 1);
+            \draw[wire] (0, 0.5) -- (0.5, 0.5);
+            \draw[wire] (0, 0) -- (0.5, 0);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        -
+        \tikzsetnextfilename{rep-of-Sn-step-5}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (-0.5, 1) -- (0, 1) -- (0.5, 1);
+            \draw[wire, rounded corners] (-0.5, 0) -- (-0.25, 0) -- (0.25, 0.5) -- (0.5, 0.5);
+            \draw[underwire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        = -\ve{1} - \ve{2}.
+    \end{align}
+    Here we act on the inputs to the Young projector, then interpret this as acting on the underlying Young tableau, which we can then decompose into a sum of standard Young tableaux using the Garnir relations, and then we can write each standard tableau as a permutation acting on the Young projector corresponding to the ordered Young tableau.
+    We can do exactly the same with the second basis vector to get
+    \begin{align}
+        \cycle{1,3} \action \ve{2} &= 
+        \tikzsetnextfilename{rep-of-Sn-step-6}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire, rounded corners] (-1.5, 1) -- (-1.25, 1) -- (-0.75, 0) -- (-0.5, 0) -- (-0.25, 0) -- (0.25, 0.5) -- (0.5, 0.5);
+            \draw[underwire, rounded corners] (-1.5, 0.5) -- (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire, rounded corners] (-1.5, 0.5) -- (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[underwire, rounded corners] (-1.5, 0) -- (-1.25, 0) -- (-0.75, 1) -- (0.5, 1);
+            \draw[wire, rounded corners] (-1.5, 0) -- (-1.25, 0) -- (-0.75, 1) -- (0.5, 1);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        =
+        \tikzsetnextfilename{rep-of-Sn-step-7}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire, rounded corners] (-0.5, 0) -- (-0.25, 0) -- (0.25, 1) -- (0.5, 1);
+            \draw[underwire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[underwire, rounded corners] (-0.5, 1) -- (-0.25, 1) -- (0.25, 0.5) -- (0.5, 0.5);
+            \draw[wire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire, rounded corners] (-0.5, 1) -- (-0.25, 1) -- (0.25, 0.5) -- (0.5, 0.5);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        \\
+        &=
+        \tikzsetnextfilename{rep-of-Sn-step-8}
+        \begin{tikzpicture}[baseline=0.42cm]
+            \draw[wire] (-0.5, 1) -- (0, 1) -- (0.5, 1);
+            \draw[wire, rounded corners] (-0.5, 0) -- (-0.25, 0) -- (0.25, 0.5) -- (0.5, 0.5);
+            \draw[underwire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire, rounded corners] (-0.5, 0.5) -- (-0.25, 0.5) -- (0.25, 0) -- (0.5, 0);
+            \draw[wire] (1.5, 1) -- (2, 1);
+            \draw[wire] (1.5, 0.5) -- (2, 0.5);
+            \draw[wire] (1.5, 0) -- (2, 0);
+            \draw (0.5, -0.25) rectangle (1.5, 1.25);
+            \node at (1, 0.5) {\ytableaushort{12,3}};
+        \end{tikzpicture}
+        = \ve{2}.
+    \end{align}
+    In the last step we identified that the projector is symmetric in the first two inputs and so we are free to swap the first two input wires, which leaves us with \(\ve{2}\).
+    If we hadn't seen that this was possible then we could have applied the permutation to the Young tableau and then decomposed the result with the Garnir relations, and the answer would be the same, it's just slower.
+    We can then use the action on these two basis vectors to give the action on the entire representation space by considering the equation
+    \begin{equation}
+        \begin{pmatrix}
+            \ve{1} & \ve{2}
+        \end{pmatrix}
+        \rho\cycle{1,3} = 
+        \begin{pmatrix}
+            -\ve{1} - \ve{2} & \ve{2}
+        \end{pmatrix}
+        \implies \rho\cycle{1,3} = 
+        \begin{pmatrix}
+            -1 & 0\\
+            -1 & 1
+        \end{pmatrix}
+        .
+    \end{equation}
+    To summarise the process given some \(\sigma \in \symmetricGroup\) and an \(n\) box Young diagram labelling a representation we can find the action of \(\sigma\) in this representation as follows:
+    \begin{enumerate}
+        \item Write down the \(d\) standard tableaux of the same shape, these give the standard permutations, \(\tau_i\).
+        \item Act on the ordered Young projector with the standard permutations to get the basis elements, \(\ve{i} = \tau_i \action \projector{Y}\).
+        \item Act on each basis element with the permutation, \(\sigma \action \ve{i}\).
+        \item Simplify the result using Garnir relations until the result is written in terms of \(\ve{i}\).
+        \item Solve the equation
+        \begin{equation}
+            \begin{pmatrix}
+                \ve{1} & \cdots & \ve{d}
+            \end{pmatrix}
+            \rho(\sigma) = 
+            \begin{pmatrix}
+                \sigma \action \ve{1} & \cdots & \sigma \action \ve{d}
+            \end{pmatrix}
+        \end{equation}
+        for the \(d \times d\) representation matrix, \(\rho(\sigma)\).
+    \end{enumerate}
+    
+    
     
     % Appdendix
     \appendixpage
