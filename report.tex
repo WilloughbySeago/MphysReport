@@ -631,6 +631,11 @@ noabbrev
     While the relations are on the level of the Young projectors, which are elements of the group algebra, \(\complex[\symmetricGroup]\), they are applied on the level of the Young tableaux.
     So just keep in mind that whenever we write a sum of two Young tableau the sum is actually happening one layer down in the group algebra.
     
+    The Garnir relations work by taking a symmetriser, a strip of boxes in a Young tableau.
+    We then apply this to the Young tableau, and there are only so many ways that this can be done without getting zero.
+    We choose this symmetriser such that it involves symmetrising over indices which the projector antisymmetrises, and so the result is zero overall.
+    This allows us to write a Young tableau as a sum of Young tableau which are closer to being standard Young tableau.
+    
     We start with a nonstandard \(k\) box Young tableau.
     The Garnir relations are best expressed through an example.
     We'll start with the \(k = 11\) nonstandard Young tableau
