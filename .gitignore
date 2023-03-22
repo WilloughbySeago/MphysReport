@@ -274,3 +274,7 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+
+# ADDED BY ME
+# tikz externalised files
+tikz-external/*
