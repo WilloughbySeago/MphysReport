@@ -16,6 +16,8 @@
 \tikzexternalize[prefix=tikz-external/]
 % Other libraries
 \usetikzlibrary{positioning}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{calc}
 
 \usepackage{tikz-cd}
 
@@ -70,6 +72,12 @@ noabbrev
 \tikzset{underwire/.style={line width=1mm, background color}}
 \tikzset{symmetriser/.style={fill=background color, thick, rounded corners=1pt}}
 \tikzset{antisymmetriser/.style={fill=black, thick, rounded corners=1pt}}
+\tikzset{wire arrow/.style={wire, postaction={decorate, decoration={markings, mark=at position #1 with {\arrow{stealth}}}}}}
+\tikzset{wire arrow/.default=0.5}
+\tikzset{wire arrow reversed/.style={wire, postaction={decorate, decoration={markings, mark=at position #1 with {\arrowreversed{stealth}}}}}}
+\tikzset{wire arrow reversed/.default=0.5}
+\tikzset{over wire/.style={wire, preaction={draw, background color, line width=#1}}}
+\tikzset{over wire/.default={1.5mm}}
 
 % Text
 \newcommand{\Mathematica}{\textit{Mathematica}}
@@ -77,7 +85,7 @@ noabbrev
 % Maths
 \newcommand{\identity}{1}
 \newcommand{\identityMatrix}{\symbb{I}}
-\newcommand{\symmetricGroup}[1][n]{S_{#1}}
+\newcommand{\symmetricGroup}[1][n]{\symfrak{S}_{#1}}
 \DeclareMathOperator{\Mat}{Mat}
 \RenewDocumentCommand{\matrices}{ o m m }{
     \IfNoValueTF{#1}{
@@ -142,7 +150,7 @@ noabbrev
     This code, mostly written in \Mathematica{}, has also been used to perform many of the calculations found in examples in this report.
     Before we jump straight into the maths we will give a brief overview of the key ideas introducing only a minimal amount of mathematics.
     
-    \section{Overview}
+    \section{Overview}\label{sec:overview}
     A tensor is something which transforms like a tensor.
     This famously unhelpful definition can be made rigorous using group theory and representation theory.
     Group theory is broadly the study of symmetry, and can be used to simplify many problems down to basic algebraic manipulation.
@@ -217,6 +225,12 @@ noabbrev
     
     We use the metric signature \(({+}{-}{-}{-})\) throughout, so the Minkowski metric and its inverse both have the matrix form \(\minkowskiMetric = \diag(1, -1, -1, -1)\).
     
+    Throughout this report we shall make reference to the algebraic objects known as rings and fields in an attempt to make things as general as possible.
+    If the reader is not familiar with these concepts then they may simply replace rings with the integers, \(\integers\), and fields with either the real numbers, \(\reals\), or complex numbers, \(\complex\).
+    
+    It is assumed that the reader is familiar with basic linear algebra, such as vectors and matrices.
+    A few necessary concepts which appear less often in physics are recapped in \cref{app:linear algebra}
+    
     \chapter{Tensors}
     We start by looking at the definition of a tensor.
     This definition can be neatly summarised as \enquote{a tensor is something which transforms like a tensor}.
@@ -257,6 +271,8 @@ noabbrev
     We will use cycle notation for elements of \(\symmetricGroup\), where a cycle sends each element to the next in the list and the last element in the list to the first.
     For example, \(\cycle{1,3,4}\) sends \(1\) to \(3\), \(3\) to \(4\), and \(4\) to \(1\).
     In this notation the identity is the empty cycle, \(\cycle{}\).
+    
+    Given two groups, \(G\) and \(H\), we can form a new group, called the \defineindex{direct product} \(G \otimes W\), whose elements are pairs \((g, h) \in G \times H\), that is \(g \in G\) and \(h \in H\), with the group operation \((g, h)(g', h') = (gg', hh')\) for \(g, g' \in G\) and \(h, h' \in H\).
     
     Another important family of groups are various collections of matrices with matrix multiplication as the group operation.
     In this case the group identity is the identity matrix of  the appropriate dimension, \(\identityMatrix\).
@@ -484,11 +500,165 @@ noabbrev
         so it is a rank 2 contravariant tensor.
     \end{exm}
     
+    Given two tensors, \(R \in V^{\otimes q} \otimes \dual{V}^{\otimes p}\) and \(T \in V^{\otimes r} \otimes \dual{V}^{\otimes s}\), we can form a new tensor \(R \otimes T \in V^{\otimes(q + r)} \otimes \dual{V}^{\otimes(p + s)}\), with components given by
+    \begin{equation}
+        \tensor{(R \otimes T)}{^{a_1\dotso a_q b_1 \dotso b_r}_{c_1 \dotso c_p d_1 \dotso d_s}} = \tensor{R}{^{a_1\dotso a_q}_{c_1 \dotso c_p}} \tensor{T}{^{b_1 \dotso b_r}_{d_1 \dotso d_s}}.
+    \end{equation}
+    This operation is often used implicitly, such as writing \(k^\mu k^\nu\), and neglecting to note that this object actually lives in a different space to \(k^\mu\), namely it lives in \(V \otimes V\).
+    
     % TODO: Maybe talk about raising and lowering indices? Using Killing form?
     
     \section{Birdtracks}
-    % TODO: Extend this into a section on diagrammatic notation more generally, eg for tensors as well as just permutations
-    A permutation in \(\symmetricGroup\) can pictured with a \defineindex{string diagram}, which tracks \(n\) elements swapping through wires connecting inputs and outputs \cite[49]{cvitanovic}.
+    \subsection{Birdtracks for Tensors}
+    Equations involving multiple tensors, particularly with contractions between the tensors, can quickly become a mess of indices, and keeping track of which indices are free and which are summed can be a demanding task.
+    Anyone who's worked with tensors extensively will have at some point in their calculations run out of appropriate letters to use as indices, and accidentally reusing a letter can make an entire expression completely meaningless.
+    For this reason we now introduce a notation known as \defineindex{birdtracks} for expressing the components of tensors.
+    
+    Birdtracks are inspired by Feynman diagrams, and indeed sometimes arise explicitly as Feynman diagrams, and indeed many Feynman diagrams can be directly interpreted as birdtracks.
+    This notation was first developed by Roger Penrose % TODO: citation
+    who originally designed the notation for use in general relativity.
+    The general idea is to represent a tensor as a vertex in a graph, with the edges of the graph, which we call wires, being the indices of the tensor.
+    Two vertices are joined by an edge if that index is contracted over.
+    We distinguish contravariant and covariant indices where required with arrows on the line, pointing away from the vertex for a contravariant index and towards it for a covariant index.
+    Allowing only one arrow on each line ensures that we can only contract a contravariant index with a covariant index.
+    
+    For example, suppose we have a tensor with components \(\tensor{T}{^{abc}_{de}}\), which we wish to represent in this notation.
+    We write this as
+    \begin{equation}
+        \tensor{T}{^{abc}_{de}} = 
+        \tikzsetnextfilename{birdtracks-example-tensor}
+        \begin{tikzpicture}[baseline=(T.base)]
+            \node[draw, minimum width=1cm, minimum height=1.5cm] (T) {\(T\)};
+            \draw[wire arrow reversed=0.425] ($(T.west) + (0, 0.6)$) -- ++ (-1, 0) node [left, font=\scriptsize] {\(a\)};
+            \draw[wire arrow reversed=0.425] ($(T.west) + (0, 0.3)$) -- ++ (-1, 0) node [left, font=\scriptsize] {\(b\)};
+            \draw[wire arrow reversed=0.425] (T.west) -- ++ (-1, 0) node [left, font=\scriptsize] {\(c\)};
+            \draw[wire arrow=0.575] ($(T.west) + (0, -0.3)$) -- ++ (-1, 0) node [left, font=\scriptsize] {\(d\)};
+            \draw[wire arrow=0.575] ($(T.west) + (0, -0.6)$) -- ++ (-1, 0) node [left, font=\scriptsize] {\(e\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    We include the index labels only for comparison with the notation \(\tensor{T}{^{abc}_{de}}\), in general they can be dropped.
+    In doing so it is important to always read the indices going anticlockwise around the tensor to get the order correct.
+    Which index we start with often doesn't matter, as long as we are consistent, but when it does we may mark the starting index, or arrange the indices in such a way that it is clear where to start, here we do so by having \(a\) at the top.
+    
+    It is not important at what position a wire enters a node, nor is it important where the wire goes if the corresponding index is not contracted.
+    This leaves us free to bend wires, and move them around as needed.
+    It is only the connectivity between different tensors which we care about.
+    
+    The Kronecker delta is a common enough tensor that we give it its own special notation, we draw it as a wire with no node:
+    \begin{equation}
+        \tensor{\delta}{^a_b} = 
+        \tikzsetnextfilename{birdtracks-kronecker-delta}
+        \begin{tikzpicture}[baseline=(b.base)]
+            \draw[wire arrow=0.575] (0, 0) node [right, font=\scriptsize] {\(a\)} -- (-1, 0) node [left, font=\scriptsize] (b) {\(b\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    In the language of Feynman diagrams we may refer to this as a propagator.
+    Indeed, many propagators, such as those of a particle with colour charge, carry a factor of \(\tensor{\delta}{^a_b}\), acting as the identity on colour space, so the colour of the particle doesn't change as it propagates.
+    
+    To contract tensors we join up the contracted indices.
+    For example, we can write \(\tensor{T}{^{abc}_{de}}\tensor{R}{^{d}_{afc}}\) as
+    \begin{equation}
+        \tensor{T}{^{abc}_{de}} \tensor{R}{^{d}_{afc}} = 
+        \tikzsetnextfilename{birdtracks-contraction}
+        \begin{tikzpicture}[baseline=(T.base)]
+            \node[draw, minimum width=1cm, minimum height=1.5cm] (T) {\(T\)};
+            \draw[wire arrow=0.575] ($(T.east) + (0, 0.6)$) -- ++ (1, 0) node [right, font=\scriptsize, xshift=-0.1cm] {\(e\)};
+            \draw[wire arrow=0.575] ($(T.east) + (0, 0.3)$) -- ++ (1, 0) coordinate (T2);
+            \draw[wire arrow reversed=0.425] (T.east) -- ++ (1, 0) coordinate (T3);
+            \draw[wire arrow reversed=0.425] ($(T.east) + (0, -0.3)$) -- ++ (1, 0) node [right, font=\scriptsize, xshift=-0.1cm] {\(b\)};
+            \draw[wire arrow reversed=0.425] ($(T.east) + (0, -0.6)$) -- ++ (1, 0) coordinate (T5);
+            \node[draw, minimum width=1cm, minimum height=1.5cm] (R) at (4, 0) {\(R\)};
+            \draw[wire arrow=0.575] ($(R.west) + (0, 0.6)$) -- ++ (-1, 0) coordinate (R1);
+            \draw[wire arrow=0.575] ($(R.west) + (0, 0.2)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.13cm] {\(f\)};
+            \draw[wire arrow=0.575] ($(R.west) + (0, -0.2)$) -- ++ (-1, 0) coordinate (R3);
+            \draw[wire arrow reversed=0.425] ($(R.west) + (0, -0.6)$) -- ++ (-1, 0) coordinate (R4);
+            \draw[over wire, rounded corners] ($(T2) + (-0.1, 0)$) -- ++ (0.4, 0) -- ++ (0.4, -0.9) -- ($(R4) + (0.1, 0)$) node [below, font=\scriptsize, shift={(-0.2, 0.08)}] {\(d\)};
+            \draw[over wire, rounded corners] ($(T3) + (-0.1, 0)$) -- ++ (0.4, 0) -- ++ (0.4, 0.6) -- ($(R1) + (0.1, 0)$) node [above, font=\scriptsize, shift={(-0.2, -0.08)}] {\(c\)};
+            \draw[over wire, rounded corners] ($(T5) + (-0.1, 0)$) -- ++ (0.4, 0) -- ++ (0.4, 0.4) -- ($(R3) + (0.1, 0)$) node [above, font=\scriptsize, shift={(-0.2, -0.08)}] {\(a\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    Again, the indices are labelled for comparison to the index notation.
+    
+    It is possible to contract indices on the same tensor, this is drawn as a loop.
+    For example, given a rank 2 tensor \(M\) its trace is
+    \begin{equation}
+        \tr(M) = \tensor{M}{^a_a} = 
+        \tikzsetnextfilename{birdtracks-trace}
+        \begin{tikzpicture}[baseline=(M.base)]
+            \node[draw] (M) {\(M\)};
+            \node at (0, 0.45) {};
+            \draw[wire arrow=0.54] (M.west) arc (270:90:0.2) coordinate (here) -- (M.east |- here) arc (90:-90:0.2);
+        \end{tikzpicture}
+        .
+    \end{equation}
+    A particularly common example of this is the trace of the Kronecker delta, \(\tensor{\delta}{^a_a} = n\), where \(n\) is the dimension of the vector space \(V\), recalling that \(\delta \in V \otimes \dual{V}\).
+    This is then drawn as
+    \begin{equation}
+        \tensor{\delta}{^a_a} = 
+        \tikzsetnextfilename{birdtracks-kronecker-delta-trace}
+        \begin{tikzpicture}[baseline=-0.08cm]
+            \draw[wire] circle [radius=0.3];
+            \draw[thick, decorate, decoration={markings, mark =at position 1 with \arrow{stealth}}] (0.05, 0.3) -- ++ (0.01, 0);
+            \node at (0, 0.35) {};
+        \end{tikzpicture}
+        = n.
+    \end{equation}
+    
+    Given two tensors, such as \(\tensor{T}{^{abc}_{de}}\) and \(\tensor{R}{^{f}_{ghi}}\), we can form their tensor product, which has components \(\tensor{(T \otimes R)}{^{abcf}_{deghi}} = \tensor{T}{^{abc}_{de}}\tensor{R}{^f_{ghi}}\).
+    Diagrammatically, this is represented by simply placing the two tensors next to each other with no indices contracted:
+    \begin{equation}
+        \tikzsetnextfilename{birdtracks-tensor-product}
+        \begin{tikzpicture}[baseline=(T.base)]
+            \node[draw, minimum width=1cm, minimum height=1.5cm] (T) {\(T\)};
+            \draw[wire arrow=0.575] ($(T.west) + (0, 0.6)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(a\)};
+            \draw[wire arrow=0.575] ($(T.west) + (0, 0.3)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(b\)};
+            \draw[wire arrow reversed=0.425] (T.west) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(c\)};
+            \draw[wire arrow reversed=0.425] ($(T.west) + (0, -0.3)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(d\)};
+            \draw[wire arrow reversed=0.425] ($(T.west) + (0, -0.6)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(e\)};
+            \node[draw, minimum width=1cm, minimum height=1.5cm] (R) at (2.5, 0) {\(R\)};
+            \draw[wire arrow=0.575] ($(R.west) + (0, 0.6)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(f\)};
+            \draw[wire arrow=0.575] ($(R.west) + (0, 0.2)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.13cm] {\(g\)};
+            \draw[wire arrow=0.575] ($(R.west) + (0, -0.2)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(h\)};
+            \draw[wire arrow reversed=0.425] ($(R.west) + (0, -0.6)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(i\)};
+        \end{tikzpicture}
+    \end{equation}
+    While the tensor product is not strictly commutative it is up to isomorphism, that is there is an invertible linear map \(V \otimes W \to W \otimes V\), and this map is compatible with all of the relevant structure, and is uniquely defined.
+    This means we are free to move these tensors around in the diagram, as well as the manipulation of the wires which we have been doing so far.
+    
+    We can express symmetries of a tensor in this notation by crossing wires to denote swapping the indices.
+    For example, if \(S^{ab}\) is a symmetric tensor then we have
+    \begin{equation}
+        S^{ab} = 
+        \tikzsetnextfilename{birdtracks-symmetric-tensor-1}
+        \begin{tikzpicture}[baseline=(S.base)]
+            \node[draw] (S) {\(T\)};
+            \draw[wire arrow=0.575] ($(S.west) + (0, 0.15)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(a\)};
+            \draw[wire arrow=0.575] ($(S.west) + (0, -0.15)$) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(b\)};
+        \end{tikzpicture}
+        \mkern5mu =
+        \tikzsetnextfilename{birdtracks-symmetric-tensor-2}
+        \begin{tikzpicture}[baseline=(S.base)]
+            \node[draw] (S) {\(S\)};
+            \draw[wire arrow=0.85, rounded corners] ($(S.west) + (0, -0.15)$) -- ++ (-0.3, 0) -- ++ (-0.3, 0.3) -- ++ (-0.4, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(b\)};
+            \draw[wire arrow=0.85, rounded corners, over wire] ($(S.west) + (0, 0.15)$) -- ++ (-0.3, 0) -- ++ (-0.3, -0.3) -- ++ (-0.4, 0) coordinate (a) node [left, font=\scriptsize, xshift=0.1cm] {\(a\)};
+        \end{tikzpicture}
+        \mkern4mu = S^{ba}.
+    \end{equation}
+    
+    We can think of the symmetry of a tensor as the action of the symmetric group on its indices.
+    In general given \(V^{\otimes p} \otimes \dual{V}^{\otimes q}\), there is a natural action of \(\symmetricGroup[p] \otimes \symmetricGroup[q]\) on this space, \(\symmetricGroup[p]\) acts to permute the copies of \(V\) and \(\symmetricGroup[q]\) acts to permute the copies of \(\dual{V}\).
+    In terms of the components this corresponds to permuting upper indices and permuting lower indices.
+    For example, that \(S^{ab}\) is symmetric means that \(S^{ab}\) is invariant under the action of \(\cycle{1,2} \in \symmetricGroup[2]\).
+    In general, a totally symmetric tensor, \(S^{a_1\dotso a_p}\), is invariant under the action of any permutation in \(\symmetricGroup[p]\).
+    Likewise, a totally antisymmetric tensor, \(A^{a_1\dotso a_p}\), is invariant under any even permutation in \(\symmetricGroup[p]\) and picks up a factor of \(-1\) under any odd permutation in \(\symmetricGroup[p]\).
+    
+    \subsection{Birdtracks for the Symmetric Group}
+    This identification of symmetries with permutations allows us to extend this notation to a notation for the symmetric group.
+    We don't write any arrows, since these only tell us whether and index is contravariant or covariant, which depends on what tensor we are acting on.
+    A permutation in \(\symmetricGroup\) can then be pictured as a collection of wires tracking \(n\) elements swapping around \cite[49]{cvitanovic}.
     For example, the permutation \(\cycle{1,2,4} \in \symmetricGroup[5]\) can be drawn, including labels normally left implicit, as
     \begin{equation}
         \tikzsetnextfilename{math-prelims-example-braid}
@@ -579,9 +749,9 @@ noabbrev
     \begin{equation}
         A_{i_1 \dotso i_k} \coloneqq \frac{1}{k!} \sum_{\sigma \in \symmetricGroup[k]} \sgn(\sigma) \sigma
     \end{equation}
-    where \(\sgn\) is the sign function, defined to be 1 if \(\sigma\) can be decomposed as an even number of transpositions, and \(-1\) otherwise.
+    where \(\sgn\) is the sign function, defined to be 1 if \(\sigma\) can be written as a product of an even number of transpositions, and \(-1\) otherwise.
     
-    For example, \(S_{12} = (\cycle{} + \cycle{1,2})/2\) and \(A_{12} = (\cycle{} + \cycle{1,2})/2\).
+    For example, \(S_{12} = (\cycle{} + \cycle{1,2})/2\) and \(A_{12} = (\cycle{} - \cycle{1,2})/2\).
     Acting on a two index tensor, \(T^{ij}\), with these gives
     \begin{align}
         S_{12} \action T^{ij} &= T^{(ij)} = \frac{1}{2}(T^{ij} + T^{ji}),\\
@@ -631,6 +801,16 @@ noabbrev
     \end{align}
     
     \chapter{Young Tableaux}
+    \section{Motivation}
+    Recall our examples of tensors with symmetries from \cref{sec:overview}.
+    We saw the Kronecker delta, \(\delta^{ij}\), is completely symmetric, the Levi-Civita symbol, \(\varepsilon^{ijk}\), and field strength tensor, \(F^{\mu\nu}\), are completely antisymmetric, and the Riemann tensor, \(R_{\mu\nu\rho\sigma}\), has mixed symmetry.
+    In order to discus these we need a notation to quickly define the symmetries of a given tensor.
+    These symmetries will all be of the form \enquote{some collection of indices} are symmetric (or antisymmetric) under exchange.
+    
+    % TODO: Change this section to contain more motivation
+    % tesnors δ, ε, F, R have symmetry, how can we classify it? Young diagrams
+    % hey, look, Young diagrams also classify partitions
+    % given a Young diagram how do we construct a tensor with that symmetry? We act on a tensor with no symmetry with a Young projector
     \section{What are Young Tableaux}
     \begin{dfn}{Partition}{}
         Let \(k\) be a natural number.
@@ -663,7 +843,7 @@ noabbrev
     \begin{equation}
         \ytableaushort{12,3,4}, \qquad \ytableaushort{13,2,4}, \qqand \ytableaushort{14,2,3}.
     \end{equation}
-    
+        
     \begin{dfn}{Hook Number}{}
         Given a Young diagram, \(Y\), the \defineindex{hook length} of a box is the number of boxes to the right of that box, plus the number of boxes below that box, plus 1 for the box itself.
         The \defineindex{hook number}, \(\hooknumber{Y}\), is the product of the hook lengths \cite[88]{cvitanovic}.
@@ -1267,10 +1447,61 @@ noabbrev
     % TODO: Talk about difference between Young projectors as related to Sn and SU(N) irreps
     % TODO: Talk about 3j and 6js and how every diagram can be reduced to them
     
-    
+    \printbibliography
     % Appdendix
     \appendixpage
     \begin{appendices}
+        \chapter{Linear Algebra}\label{sec:linear algebra}
+        We assume the reader is familiar with basic linear algebra, specifically working with vectors and matrices.
+        We will make use of certain concepts, such as direct sums and dual spaces, which are less common in physics, so we shall define them here.
+        
+        \section{Vector Spaces}
+        Recall that a \defineindex{vector space} is a set, \(V\), along with a field of scalars, \(\field\), equipped with the operations of vector addition \(+ \colon V \times V \to V\), and scalar multiplication, \(\field \times V \to V\), such that
+        \begin{itemize}
+            \item \((V, +)\) is an Abelian group,
+            \item scalar multiplication distributes over vector addition: \(z(v + u) = zv + zv\) for all \(z \in \field\) and \(u, v \in V\),
+            \item scalar multiplication distributes over field addition: \((z + w)v = zv + wv\) for all \(z, w \in \field\) and \(v \in V\),
+            \item \(1v = v\) for all \(v \in V\) where \(1 \in \field\) is the multiplicative identity,
+            \item scalar multiplication and field multiplication are compatible, \(z(wv) = (zw)v\) for all \(z, w \in \field\) and \(v \in V\).
+        \end{itemize}
+        
+        Given vector spaces \(V\) and \(W\) over the field \(\field\) a \defineindex{linear map} is a function \(\varphi \colon V \to W\) such that
+        \begin{equation}
+            \varphi(zv + u) = z\varphi(v) + \varphi(u)
+        \end{equation}
+        for all \(z\in \field\) and \(v, u \in V\).
+        
+        Given a vector space, \(V\), over the field \(\field\) we can form another vector space, \(\dual{V}\), also over \(\field\) called the \defineindex{dual space}, whose elements are linear maps \(V \to \field\), where \(\field\) is viewed as a one dimensional vector space over itself.
+        Vector addition in \(\dual{V}\) is defined pointwise, so given linear maps \(\varphi, \psi \in \dual{V}\) their sum is the linear map \(\varphi + \psi \in \dual{V}\) defined by \((\varphi + \psi)(v) = \varphi(v) + \psi(v)\).
+        Similarly, scalar multiplication in \(\dual{V}\) is defined such that given \(z \varphi \in \dual{V}\) and \(z \in \field\) we have \(z\varphi \in \dual{V}\) defined by \((z\varphi)(v) = z[\varphi(v)]\).
+        
+        \section{Tensor Products}
+        Given two vector spaces \(V\) and \(W\) over \(\field\) we can form a new vector space, also over \(\field\), called their \defineindex{tensor product}, \(V \otimes W\).
+        The simplest definition of the tensor product is basis dependent.
+        Given bases \(\{e_i\}\) and \(\{d_j\}\) for \(V\) and \(W\) respectively \(V \otimes W\) is the span, that is all linear combinations, of \(\{e_i \otimes d_j\}\), where \(e_i \otimes d_j\) is the tensor product of the basis vectors \(e_i\) and \(d_j\).
+        Notice that \(\dim(V \otimes W) = \dim(V) \dim(W)\).
+        
+        An arbitrary vector \(x \in V \otimes W\), then takes the form
+        \begin{equation}
+            x^{ij}e_i \otimes d_j,
+        \end{equation}
+        with the summation convention in effect.
+        The components of this vector are the numbers \(x^{ij}\).
+        
+        The tensor product of \(v = v^ie_i \in V\) and \(w = w^jd_j \in W\) their tensor product is the vector \(v \otimes w = v^id^j e_i \otimes d_j\).
+        That is, the vector with components \(v^iw^j\).
+        So in index notation the tensor product is simply given by putting the vectors, or more generally tensors, next to each other with distinct indices.
+        
+        \section{Direct Sum}
+        Given two vector spaces \(V\) and \(W\) over \(\field\) we can form a new vector space, also over \(\field\), called their \defineindex{direct sum}, \(V \oplus W\).
+        The vectors here are the elements of the Cartesian product \(V \times W\), so take the form \((v, w)\) with \(v \in V\) and \(w \in W\).
+        Vector addition is defined by \((v, w) + (v', w') = (v + v', w + w')\) for \(v, v' \in V\) and \(w, w' \in W\).
+        Scalar addition is defined by \(z(v, w) = (zv, zw)\) for \(z \in \field\), \(v \in V\) and \(w \in W\).
+        Notice that \(\dim(V \oplus W) = \dim(V) + \dim(W)\).
+        
+        Given a vector space \(V\) with subspace \(W\) we can identify a second subspace \(W^{\perp}\) which is such that \(V = W \oplus W^{\perp}\).
+        
+        
         \chapter{Technicalities}
         There are many technicalities which are worth mentioning but would detract from the body of the report.
         These have been relegated to this appendix.
@@ -1372,9 +1603,8 @@ noabbrev
         \end{align}
         Notice that since the Young projectors, denoted here by the corresponding Young tableaux, are elements of an algebra, \(\complex[\symmetricGroup[5]]\), we can do all of the expected algebra with them such as distributing scalars over sums since \(\complex[\symmetricGroup[5]]\) is a vector space.
     \end{appendices}
-
+    
     \backmatter
-    \printbibliography
     %    \renewcommand{\glossaryname}{Acronyms}
     %    \printglossary[acronym]
     \printindex
