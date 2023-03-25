@@ -117,6 +117,7 @@ noabbrev
 \DeclarePairedDelimiter{\tuple}{\langle}{\rangle}
 \newcommand{\isomorphic}{\cong}
 \newcommand{\projector}[1]{\symbfup{P}_{#1}}
+\newcommand{\hermitianprojector}[1]{\symbfup{H}_{#1}}
 \newcommand{\hooknumber}[1]{#1{\phantom{?}\mkern1mu\mathclap{\ooalign{\hfil ? \hfil \cr \hfil ! \hfil}}}}
 \newcommand{\dual}[1]{{#1^{*}}}
 \newcommand{\lorentzGroup}{\specialOrthogonal^+(1, 3)}
@@ -125,7 +126,8 @@ noabbrev
 \renewcommand{\ve}[1]{e_{#1}}
 \newcommand{\dualve}[1]{e^{#1}}
 \newcommand{\minkowskiMetric}{\eta}
-
+\newcommand{\e}{\symrm{e}}
+\newcommand{\rep}[1]{\symbfup{#1}}
 
 \includeonly{}
 
@@ -360,10 +362,12 @@ noabbrev
         If \(R\) is a field then \(R[G]\) is an associative algebra (a vector space with an associative product), called the \defineindex{group algebra} \cite[740]{hassani}.
     \end{dfn}
     
+    Note that an algebra is just a vector space with an extra operation \(V \times V \to V\) giving the product of two vectors in a way which is compatible with vector addition and scalar multiplication.
+        
     The most common case of a group algebra is the group algebra \(\complex[G]\) for some arbitrary group, \(G\).
     Elements of this take the form \(z_i g_i\) for some \(z_i \in \complex\) and \(g_i \in G\), using the Einstein summation convention.
     
-    \section{Representations}
+    \section{Representations}% TODO: define fundamebtal and adjoint representation
     Let \(V\) be a vector space over the field \(\field\).
     Denote by \(\generalLinear(V)\) the space of all invertible linear transformations on \(V\), that is
     \begin{equation}
@@ -384,6 +388,8 @@ noabbrev
     \end{dfn}
     
     It is common to refer to both \(\rho\), \(V\), alone, as well as the pair \((\rho, V)\) as the representation.
+    While we can take representations over arbitrary fields we will restrict ourselves to representations over \(\complex\), since these have the most applications in physics.
+    
     The simplest example of a representation is the \defineindex{trivial representation}, \((\rho_{\text{trivial}}, V)\), which acts trivially on \(V\), that is \(\rho_{\text{trivial}}(g) = \identityMatrix\), or equivalently, \(g \action v = v\) for all \(g \in G\).
     
     \begin{exm}{Permutation Representation}{}
@@ -475,6 +481,10 @@ noabbrev
     
     Note that what we have defined above may be more specifically called a \((p, q)\)-tensor.
     A \((p, 0)\)-tensor is also commonly referred to as a rank \(p\) contravariant tensor, or simply a rank \(p\) tensor, and a \((0, q)\)-tensor may be referred to as a rank \(q\) covariant tensor.
+    
+    If a tensor transforms under no copies of \(G\), that is it carries no indices, then we say it is a \defineindex{scalar}.
+    If a tensor transforms under a single copy of \(G\), that is it carries a single index, then we say it is a \defineindex{vector}.
+    Note that these definitions are technically incompatible with the mathematicians definitions, where scalars are elements of \(\field\) and vectors are elements of a vector space, including spaces like \(\field\) and \(V \otimes V\), whereas physicists would call \(T \in V \otimes V\) a rank 2 tensor and not a vector.
     
     \begin{exm}{}{}
         In classical mechanics we consider Cartesian tensors, which transform under the rotation group \(\specialOrthogonal(3)\).
@@ -807,11 +817,74 @@ noabbrev
     In order to discus these we need a notation to quickly define the symmetries of a given tensor.
     These symmetries will all be of the form \enquote{some collection of indices} are symmetric (or antisymmetric) under exchange.
     
-    % TODO: Change this section to contain more motivation
-    % tesnors δ, ε, F, R have symmetry, how can we classify it? Young diagrams
-    % hey, look, Young diagrams also classify partitions
-    % given a Young diagram how do we construct a tensor with that symmetry? We act on a tensor with no symmetry with a Young projector
-    \section{What are Young Tableaux}
+    We could start by listing all sets of indices which are symmetrised over.
+    For our example tensors this gives the lists
+    \begin{equation}
+        \delta: [[i, j]], \quad \varepsilon: [], \quad F: [], \qand R: [[\mu\nu], [\rho\sigma]],
+    \end{equation}
+    where we treat \(\mu\nu\) and \(\rho\sigma\) as a single index.
+    We can also list all sets of indices which are antisymmetrised over.
+    For our example tensors this gives the lists
+    \begin{equation}
+        \delta: [], \quad \varepsilon: [[i, j, k]], \quad F: [[\mu, \nu]], \qand R: [[\mu, \nu], [\rho, \sigma]].
+    \end{equation}
+    
+    After playing around with these lists for a bit we might notice that we can write both lists at once:
+    \begin{equation}
+        \delta: 
+        \begin{bmatrix}
+            i & j
+        \end{bmatrix}
+        , \quad \varepsilon: 
+        \begin{bmatrix}
+            i\\
+            j\\
+            k
+        \end{bmatrix}
+        , \quad F:
+        \begin{bmatrix}
+            \mu\\
+            \nu
+        \end{bmatrix}
+        , \qand R: 
+        \begin{bmatrix}
+            \mu & \nu\\
+            \rho & \sigma
+        \end{bmatrix}
+        .
+    \end{equation}
+    Here we read across to see which indices are symmetrised and down to see which indices are antisymmetrised.
+    We've been trying to move away from explicitly labelling indices, so lets just take the order of the indices as it is and replace all the symbols with a blank square, \(\square\):
+    \begin{equation}
+        \delta: 
+        \begin{bmatrix}
+            \square & \square
+        \end{bmatrix}
+        , \quad \varepsilon: 
+        \begin{bmatrix}
+            \square\\
+            \square\\
+            \square
+        \end{bmatrix}
+        , \quad F:
+        \begin{bmatrix}
+            \square\\
+            \square
+        \end{bmatrix}
+        , \qand R: 
+        \begin{bmatrix}
+            \square & \square\\
+            \square & \square
+        \end{bmatrix}
+        .
+    \end{equation}
+    Finally, take away the brackets and push all the squares together and we get
+    \begin{equation}
+        \delta: \ydiagram{2}\,, \quad \varepsilon:\ydiagram{1,1,1}\,, \quad F: \ydiagram{1,1}\,, \qand R: \ydiagram{2,2}\,.
+    \end{equation}
+    The next section formalises this notation, which are called Young diagrams.
+    
+    \section{What are Young Diagrams}
     \begin{dfn}{Partition}{}
         Let \(k\) be a natural number.
         A \defineindex{partition} of \(k\) is a tuple, \(\tuple{\lambda_1, \dotsc, \lambda_n}\) such that \cite[720]{hassani}
@@ -834,7 +907,7 @@ noabbrev
         \ydiagram{4}\,, \quad \ydiagram{3,1}\,, \quad \ydiagram{2,2}\,, \quad \ydiagram{2,1,1}\,, \qand \ydiagram{1,1,1,1}\,.
     \end{equation}
     
-    \begin{dfn}{Young Tableau}{}
+    \begin{dfn}{Young Tableaux}{}
         Given a Young diagram we form a \defineindex{Young tableau} by writing numbers in the boxes in such a way that the numbers are increasing from left to right along a row and strictly increasing from top to bottom down a column \cite{cvitanovic}.
         A \(k\) box \defineindex{standard Young tableau} is a Young tableau using the numbers 1 through \(k\) exactly once.
     \end{dfn}
@@ -892,7 +965,30 @@ noabbrev
     \end{exm}
     
     \section{Young Projectors}
-    % TODO: Add in motivating examples, such as δij, εijk, Fμν, Rμνρσ
+    We motivated Young diagrams as a way of labelling the symmetries of a given tensor.
+    We now ask the reverse question, given a Young diagram how can we construct a tensor with the given symmetries?
+    For example, suppose we want to construct a tensor with the symmetries labelled by
+    \begin{equation}
+        \ydiagram{2,1}.
+    \end{equation}
+    That is, it should be symmetric in the first two indices and antisymmetric in the second two indices.
+    Start with some tensor, \(T\), with the appropriate number of indices and no particular symmetry.
+    So in this example we start with \(T^{ijk}\).
+    We can make a tensor which is symmetric in the first pair of indices by symmetrising:
+    \begin{equation}
+        T_1^{ijk} = \frac{1}{2}(T^{ijk} + T^{jik}).
+    \end{equation}
+    We can then make a tensor which is antisymmetric in the second pair of indices by antisymmetrising:
+    \begin{equation}
+        T_2^{ijk} = \frac{1}{2}(T_1^{ijk} - T_1^{ikj}) = \frac{1}{4}(T^{ijk} + T^{jik} - T^{ikj} - T^{jik}).
+    \end{equation}
+    We can then write this as some linear combination of permutations in \(\complex[\symmetricGroup[3]]\) acting on \(T^{ijk}\):
+    \begin{equation}
+        T_2^{ijk} = \frac{1}{4}[\cycle{} + \cycle{1,2} - \cycle{2,3} - \cycle{1,3,2}] \action T^{ijk}.
+    \end{equation}
+    Generalising this procedure leads to the following definition.
+    
+    
     \begin{dfn}{Young Projector}{}
         Given a \(k\) box Young diagram, \(Y\), with \(r\) rows and \(c\) columns the \defineindex{Young projector}, \(\projector{Y}\) associated with \(Y\) is given by the following procedure \cite[91]{cvitanovic}:
         \begin{enumerate}
@@ -907,10 +1003,16 @@ noabbrev
         \end{enumerate}
     \end{dfn}
     
+    It is also possible to construct projectors from Young tableaux.
+    To do so first identify the permutation, \(\sigma\), which turns the ordered Young tableau into the Young tableau that we have, then construct the Young projector for the Young diagram of this shape.
+    Finally, take the product with the permutation \(\sigma\).
+    Acting on a tensor with no symmetries with this Young projector first acts with the permutation \(\sigma\) before acting with the normal Young projector based on the Young diagram.
+    Thus the symmetries of the resulting tensor are similar to the symmetries of the Young diagram, except instead of the index position deciding which box corresponds to which index the numbering of the boxes decides.
+    
     \begin{exm}{}{}
-        Consider the \(5\) box Young tableau
+        Consider the \(5\) box Young diagram
         \begin{equation}
-            Y = \ytableaushort{123,45}.
+            Y = \ydiagram{3,2}.
         \end{equation}
         Numbering the boxes we get
         \begin{equation}
@@ -947,27 +1049,96 @@ noabbrev
         \end{equation}
     \end{exm}
     
-    % TODO: Citations for this section
+    Young projectors are constructed in such such a way that by the usual action of the symmetric group the Young projectors on diagrams of \(k = p + q\) form a complete set of orthogonal projection operators on \(V^{\otimes p} \otimes \dual{V}^{\otimes q}\) \cite[92]{cvitanovic}.
+    Being projection operators means that \(\projector{Y} \projector{Y} = \projector{Y}\), being orthogonal means \(\projector{Y} \projector{Z} = 0\) if \(Y \ne Z\),and completeness means \(\sum_Y \projector{Y} = \cycle{} = \identity\), where the sum is over all standard tableaux with \(k\) boxes.
+    The orthogonality follows immediately from the fact that if we connect a symmetriser to an antisymmetriser with two or more wires then the result must vanish, since this is the product of a symmetric and antisymmetric term.
+    
+    \section{Hermitian Young Projectors}
+    For Young diagrams with three or more boxes the associated Young projectors are not, in general, Hermitian.
+    Hermiticity is often a desirable property.
+    Fortunately it is possible to construct Hermitian Young projectors from the Young projectors we already have.
+    
+    \begin{dfn}{Hermitian Young Projectors}{}
+        Denote by \(\projector{Y}\) the Young projector associated with the Young diagram \(Y\).
+        Let \(Y'\) be the Young diagram we get by removing the last box on the last row.
+        Construct the following
+        \begin{equation}
+            \hermitianprojector{Y} \coloneqq
+            \begin{cases}
+                \projector{Y} & \text{if } Y \text{ has 2 or fewer boxes},\\
+                (\hermitianprojector{Y'} \otimes 1) \projector{Y} (\hermitianprojector{Y'} \otimes 1) & \text{if } Y \text{ has 3 or more boxes}.
+            \end{cases}
+        \end{equation}
+    \end{dfn}
+    
+    That \(\symbfup{H}_{Y}\) are Hermitian is proven in \cite{keppeler-hermitian-young-projectors}.
+    
+    The construction of \(\symbfup{H}_{Y}\) is clearer in the diagrammatic notation, where the recursive definition is
+    \begin{equation}
+        \tikzsetnextfilename{hermitian-young-projector}
+        \begin{tikzpicture}[baseline=(equal.base), font=\scriptsize]
+            \draw (0, -0.25) rectangle (1, 1.75) node [midway] (Ptheta) {\(P_{\Theta}\)};
+            \draw[wire] (-0.5, 0) -- (0, 0);
+            \draw[wire] (-0.5, 0.5) -- (0, 0.5);
+            \draw[wire] (-0.5, 1.5) -- (0, 1.5);
+            \node at (-0.25, 1) {\(\vdots\)};
+            \draw[wire] (1, 0) -- (1.5, 0);
+            \draw[wire] (1, 0.5) -- (1.5, 0.5);
+            \draw[wire] (1, 1.5) -- (1.5, 1.5);
+            \node at (1.25, 1) {\(\vdots\)};
+            \node[right=of Ptheta] (equal) {\(=\)};
+            \draw (3, 0.25) rectangle (4, 1.75) node [midway] {\(P_{\Theta'}\)};
+            \draw[wire] (2.5, 0) -- (4.5, 0);
+            \draw[wire] (2.5, 0.5) -- (3, 0.5);
+            \draw[wire] (2.5, 1.5) -- (3, 1.5);
+            \node at (2.75, 1) {\(\vdots\)};
+            \draw[wire] (4, 0.5) -- (4.5, 0.5);
+            \draw[wire] (4, 1.5) -- (4.5, 1.5);
+            \node at (4.25, 1) {\(\vdots\)};
+            \draw (4.5, -0.25) rectangle (5.5, 1.75) node [midway] {\(Y_{\Theta}\)};
+            \draw[wire] (5.5, 0) -- (7.5, 0);
+            \draw[wire] (5.5, 0.5) -- (6, 0.5);
+            \draw[wire] (5.5, 1.5) -- (6, 1.5);
+            \node at (5.75, 1) {\(\vdots\)};
+            \draw (6, 0.25) rectangle (7, 1.75) node [midway] {\(P_{\Theta'}\)};
+            \draw[wire] (7, 0.5) -- (7.5, 0.5);
+            \draw[wire] (7, 1.5) -- (7.5, 1.5);
+            \node at (7.25, 1) {\(\vdots\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    Hermiticity in the diagrammatic notation corresponds to a vertical mirror symmetry, which is clearly present here.
+    This, combined with the fact that two box Young diagrams correspond to either a single symmetriser or single antisymmetriser, which has vertical mirror symmetry, should be enough to demonstrate Hermiticity.
+    
+    % TODO: Example of Hermitian Young projector construction
+    
     \section{Garnir Relations}
+    \subsection{Motivation}
     The standard Young tableaux of a given shape, or rather the associated Young projectors, form a basis for the Young projectors formed from Young tableaux of that shape.
+    This is useful since it restricts the number of projectors which we need to compute, allowing for more efficient computations.
+    
     The \defineindex{Garnir relations} give us a way of taking a projector corresponding to a nonstandard Young tableau and writing it as a sum of projectors corresponding to standard Young tableaux of the same shape.
     While the relations are on the level of the Young projectors, which are elements of the group algebra, \(\complex[\symmetricGroup]\), they are applied on the level of the Young tableaux.
-    So just keep in mind that whenever we write a sum of two Young tableau the sum is actually happening one layer down in the group algebra.
+    So just keep in mind that whenever we write a sum of two Young tableaux the sum is actually happening one layer down in the group algebra.
     
-    The Garnir relations work by taking a symmetriser, a strip of boxes in a Young tableau.
-    We then apply this to the Young tableau, and there are only so many ways that this can be done without getting zero.
+    The Garnir relations work by taking a symmetriser, which on the level of Young tableaux is just a row of boxes.
+    We then apply this to the Young tableau, and there are only so many ways that this can be done without getting zero, since we cannot connect multiple any antisymmetriser to this symmetriser by more than one wire for a non-zero result.
     We choose this symmetriser such that it involves symmetrising over indices which the projector antisymmetrises, and so the result is zero overall.
-    This allows us to write a Young tableau as a sum of Young tableau which are closer to being standard Young tableau.
+    This allows us to write a Young tableau as a sum of Young tableau which are closer to being standard Young tableau, in the sense that the position in the Young tableau at which it first fails to be standard moves right is found further right or further down in all of the other Young tableaux in the sum.
+    We can then rearrange this sum to find our initial Young tableau in terms of these closer-to-standard tableaux.
+    If any non-standard tableau remains in this sum simply apply the Garnir relations to this tableau until there are no non-standard tableaux.
+    Since the tableaux are all of finite extent this process must eventually terminate.
     
-    We start with a nonstandard \(k\) box Young tableau.
+    \subsection{Applying the Garnir Relations}
+    We start with a non-standard \(k\) box Young tableau.
     The Garnir relations are best expressed through an example.
-    We'll start with the \(k = 11\) nonstandard Young tableau
+    Suppose we have the 11 box non-standard Young tableau
     \begin{equation}
         Y = \ytableaushort{1256,38{10},47,9{11}}.
     \end{equation}
     Since a Young projector involves symmetrising over a row the order of the numbers in a row is not important, so we can always sort them in increasing order.
     The numbers in each row are already sorted in increasing order here, but if they weren't then doing so would be the first step.
-    The first step to applying the Garnir relations is to identify the first space, from top left going left to right top to bottom, where the tableau fails to be standard.
+    The next step to applying the Garnir relations is to identify the first space, from top left going left to right top to bottom, where the tableau fails to be standard.
     In our example this is the 8 which is above a 7.
     We then highlight from this point to the point directly below it:
     \begin{equation}
@@ -981,16 +1152,23 @@ noabbrev
     This gives us a strip of values, \(\tuple{8,10,4,7}\).
     However, we want to think of this strip not by the numbers in the boxes but the numbers of the boxes when labelled \(1\) to \(k\):
     \begin{equation}
-        \ytableaushort{1234,567,89,{10}{11}}.
+        \begin{ytableau}
+            1 & 2 & 3 & 4\\
+            5 & *(light highlight) 6 & *(light highlight) 7\\
+            *(light highlight) 8 & *(light highlight) 9\\
+            10 & 11
+        \end{ytableau}
+        .
     \end{equation}
     So the boxes highlighted above are \(6\), \(7\), \(8\), and \(9\).
     
-    The next step is to perform all permutations of this strip which give distinct Young projectors, which means that swaps within a row are all the same.
+    The next step is to perform all permutations of this strip which give distinct Young projectors.
+    Since we can always swap boxes in a row we simply look for all permutations of this strip which don't involve exchanging values within a row.
     In this case these swaps are
     \begin{equation}
         \cycle{6,8}, \quad \cycle{6,9}, \quad \cycle{7,8}, \quad \cycle{7,9}, \qand \cycle{6,8}\cycle{7,9}.
     \end{equation}
-    These permutations act on the Young tableau by permuting the values in the boxes with these numbers.
+    These permutations act on the Young tableau by permuting the values in the boxes according to the box numbers.
     This gives us the tableaux
     \ytableausetup{smalltableaux}
     \begin{alignat}{3}
@@ -1023,7 +1201,7 @@ noabbrev
         0 &= Y + \cycle{6,8} \action Y + \cycle{6,8} \action Y + \cycle{7,8} \action Y + \cycle{7,9} \action Y + \cycle{6,8}\cycle{7,9} \action Y\\
         &= \ytableaushort{1256,38{10},47,9{11}} + \ytableaushort{1256,34{10},78,9{11}} + \ytableaushort{1256,37{10},48,9{11}} + \ytableaushort{1256,348,7{10},9{11}} + \ytableaushort{1256,378,4{10},9{11}} + \ytableaushort{1256,347,8{10},9{11}}. \notag
     \end{align}
-    Thus, we can write the initial nonstandard Young tableau as
+    Thus, we can write the initial non-standard Young tableau as
     \begin{align}
         Y &= -\cycle{6,8} \action Y - \cycle{6,8} \action Y - \cycle{7,8} \action Y - \cycle{7,9} \action Y - \cycle{6,8}\cycle{7,9} \action Y\\
         &= -\ytableaushort{1256,34{10},78,9{11}} - \ytableaushort{1256,37{10},48,9{11}} - \ytableaushort{1256,348,7{10},9{11}} - \ytableaushort{1256,378,4{10},9{11}} - \ytableaushort{1256,347,8{10},9{11}}.
@@ -1034,36 +1212,36 @@ noabbrev
     We can then apply the Garnir relations to this tableau and the failure point will once again move right and/or down.
     Since tableau are finite eventually this process must terminate and we will be left with only standard tableau.
     
-    To summarise, the process of writing a nonstandard tableau in terms of standard tableau is as follows:
+    To summarise, the process of writing a non-standard tableau in terms of standard tableau is as follows:
     \begin{enumerate}
         \item Sort the rows of the tableau into ascending order, if the result is a standard tableau stop here.
         \item Identify the first point from the top left going left to right and top to bottom where the tableau fails to be standard.
         \item Identify a strip going from this point to the box under this point.
         \item Apply all permutations to this strip which result in distinct tableau.
         \item The original tableau is then the negative of the sum of these permuted tableau.
-        \item If any of the tableau in this sum are nonstandard recursively apply the Garnir relations.
-        When no nonstandard tableau remain stop.
+        \item If any of the tableau in this sum are non-standard recursively apply the Garnir relations.
+        When no non-standard tableau remain stop.
     \end{enumerate}
     Another example, where the Garnir relations are applied recursively, is in \cref{app:garnir example}
     
-    \section{Irreducible Representations of The Symmetric Group}
-    \subsection{Irreducible Representations of \texorpdfstring{\(\symmetricGroup\)}{Sn} Labelled by Young Diagrams}
-    Given a group, \(G\), we can define an equivalence relation, \(\sim\), where \(g \sim g'\) if and only if there exists some \(h \in G\) such that \(g = hg'g^{-1}\).
+    \chapter{Irreducible Representations of The Symmetric Group}
+    \section{Irreducible Representations of \texorpdfstring{\(\symmetricGroup\)}{Sn} are Labelled by Young Diagrams}
+    Given a group, \(G\), we can define an equivalence relation, \(\sim\), where \(g \sim g'\) if and only if there exists some \(h \in G\) such that \(g = hg'h^{-1}\).
     If this is the case we say that \(g\) and \(g'\) are conjugates.
     We can then take the equivalence classes, in this context called \defineindex{conjugacy classes}, and these partition \(G\).
     
     Consider the particular case when \(G = \symmetricGroup\) is the symmetric group.
     Any permutation can be written as a product of disjoint cycles, that is cycles where no number appears in more than one cycle \cite{conjugacy-classes-cycle-types}.
-    We can further order the cycles in decreasing order, and add in any element not appearing in a cycle in a singleton cycle, \(\cycle{k}\), which is just the identity, \(\cycle{}\).
+    We can further order the cycles in decreasing order, and add in any element not appearing in a cycle in a singleton cycle, \(\cycle{k}\), which sends \(k\) to \(k\) and doesn't change anything else, so it is just the identity, \(\cycle{}\).
     This standard form is unique up to order of the cycles in the product and cyclic permutations of the elements within any given cycle.
     We can then define the \defineindex{cycle type} of this permutation to be the lengths of the cycles when written in this standard form.
     For example, the permutation \(\sigma = \cycle{1,2}\cycle{3,5} \in \symmetricGroup[5]\) has standard form \(\cycle{1,2}\cycle{3,5}\cycle{4}\), which has cycle type \(\tuple{2,2,1}\).
     Since every number from 1 to \(n\) appears in exactly one cycle the cycle type is a partition of \(n\).
     It can then be shown that two permutations are conjugate if and only if they have the same cycle type \cite{conjugacy-classes-cycle-types}.
     
-    Fix some representation, \(\rho \colon G \to \generalLinear(V)\) for a finite dimensional vector space \(V\) over a field \(\field\).
+    Fix some representation, \(\rho \colon G \to \generalLinear(V)\), for a finite dimensional vector space \(V\) over a field \(\field\).
     The \defineindex{character} of \(\rho\) is the map \(\chi_\rho\colon G \to \field\) given by \(\chi_\rho(g) = \tr(\rho(g))\).
-    It is a basic result of character theory that given a conjugacy class, \([g]\), all elements of this conjugacy class have the same character, \(\chi_\rho(g)\), in a fixed representation
+    It is a basic result of character theory that given a conjugacy class, \([g]\), all elements of this conjugacy class have the same character, \(\chi_\rho(g)\), in a fixed representation. % TODO: Citation for this "basic result"
     This follows directly from the cyclic property of the trace and the fact that \(\rho\) is a group homomorphism.
     
     The character table of a group has columns labelled by conjugacy classes, and rows labelled by irreducible representations of the group.
@@ -1073,8 +1251,10 @@ noabbrev
     
     The culmination of these definitions and observations is that there is one irreducible representation of \(\symmetricGroup\) for every conjugacy class, one conjugacy class for every cycle type, one cycle type for every partition of \(n\), and one partition of \(n\) for every \(n\) box Young diagram.
     Hence there is a one-to-one correspondence between irreducible representations of \(\symmetricGroup\) and \(n\) box Young diagrams.
+    So we can use \(n\) box Young diagrams to label irreducible representations of \(\symmetricGroup\).
+    This turns out to be more than just a useful naming system, we will show in \cref{sec:computing representations of Sn} how using a Young diagram, and the associated Young projector, we can construct the representation it labels.
     
-    \subsection{Elements of \texorpdfstring{\(\symmetricGroup\)}{Sn} Labelled by Young Tableaux}
+    \section{Elements of \texorpdfstring{\(\symmetricGroup\)}{Sn} Labelled by Young Tableaux}
     Consider \(\symmetricGroup\) and fix some \(n\) box Young diagram, \(Y\).
     The identity permutation can be represented by the Young tableau of shape \(Y\) with the numbers 1 through \(n\) entered in order from left to right, top to bottom.
     For example, if we consider \(\symmetricGroup[5]\) and the Young diagram
@@ -1096,7 +1276,7 @@ noabbrev
     Thus, there is a one-to-one correspondence between permutations and Young tableaux of a fixed shape, so we can label permutations with Young tableau of a fixed shape.
     The obvious shape to choose is the shape corresponding to the diagram labelling the representation we are interested in working in.
     
-    \subsection{Dimension of the Representation}
+    \section{Dimension of the Representation}
     Let \(Y\) be an \(n\) box Young diagram labelling the irreducible representation \(\rho_Y\colon \symmetricGroup \to \generalLinear(V_Y)\) of the symmetric group \(\symmetricGroup\).
     It is possible to show that the dimension of \(V_Y\) is equal to the number of standard Young tableaux of shape \(Y\).
     This number can in turn be computed using the \defineindex{hook formula}, which tells us that the number of standard tableaux of shape \(Y\), \(d_Y\), is given by
@@ -1129,7 +1309,7 @@ noabbrev
         \tikzexternaldisable
         \begin{tabular}{c}
             \begin{tikzcd}
-                & \text{conjugacy classes of \(S_n\)} \arrow[r, <->] & \text{cycle types} \arrow[dd, <->] \\
+                & \text{conjugacy classes of \(\symmetricGroup\)} \arrow[r, <->] & \text{cycle types} \arrow[dd, <->] \\
                 \text{irreps of \(\symmetricGroup\)} \arrow[ur, <->] \arrow[dr, <->] && \\
                 & \text{\(n\) box Young diamgrams} \arrow[r, <->] & \text{partitions of \(n\)}
             \end{tikzcd}
@@ -1143,14 +1323,14 @@ noabbrev
             \end{tikzcd}
         \end{tabular}
         \tikzexternalenable
-        \caption{One-to-one relations between various concepts relating to Young diagrams and tableaux, and representations of \(S_n\).}
+        \caption{One-to-one relations between various concepts relating to Young diagrams and tableaux, and representations of \(\symmetricGroup\).}
         \label{fig:one-to-one relations in Sn}
     \end{figure}
     
     
-    \subsection{Computing Representations of \texorpdfstring{\(\symmetricGroup\)}{Sn}}
+    \section{Computing Representations of \texorpdfstring{\(\symmetricGroup\)}{Sn}}\label{sec:computing representations of Sn}
     The question now is given some \(\sigma \in \symmetricGroup\) and some \(n\) box Young diagram, \(Y\), how do we find the matrix corresponding to \(\sigma\) in the representation labelled by \(Y\)\kern0.1em?
-    We'll follow demonstrate the procedure with the example \(\sigma = \cycle{1,3}\) and the representation labelled by the Young diagram
+    We'll demonstrate the procedure by computing \(\sigma = \cycle{1,3}\) in the representation labelled by the Young diagram
     \begin{equation}
         Y = \ydiagram{2,1}.
     \end{equation}
@@ -1164,13 +1344,13 @@ noabbrev
     \begin{equation}
         d_Y = \frac{3!}{3} = 2,
     \end{equation}
-    and indeed there are two standard Young tableaux of this shape:
+    and indeed, there are two standard Young tableaux of this shape:
     \begin{equation}
         \ytableaushort{12,3}, \qqand \ytableaushort{13,2}.
     \end{equation}
     From each of these standard tableaux we can identify a \defineindex{standard permutation}, the permutation which acts on \(Y_{\cycle{}}\) to give the standard tableau, in this case the standard permutations are \(\cycle{}\) and \(\cycle{2,3}\).
     
-    We need the Young projector associated with \(Y\):
+    We now need the Young projector associated with \(Y\):
     \begin{equation}
         \projector{Y} = \frac{4}{3} \,
         \tikzsetnextfilename{rep-of-Sn-example-Young-projector}
@@ -1200,7 +1380,7 @@ noabbrev
         \end{tikzpicture}
         .
     \end{equation}
-    If we act on the left of this projector with our two standard permutations we get
+    If we act on the left of this projector with our two standard permutations we get the following two projectors
     \begin{equation}
         \cycle{} \action \projector{Y} = \projector{Y} = \ve{1}, \qqand \cycle{2,3} \action \projector{Y} = 
         \tikzsetnextfilename{rep-of-Sn-second-basis-element}
@@ -1217,8 +1397,9 @@ noabbrev
         \end{tikzpicture}
         = \ve{2}.
     \end{equation}
-    We take these two projectors to form a basis, \(\{\ve{1}, \ve{2}\}\), for our representation space.
-    Next act on this basis with \(\sigma = \cycle{1,3}\), giving
+    These two projectors form a basis, \(\{\ve{1}, \ve{2}\}\), for our representation space.
+    Next act on this basis with \(\sigma = \cycle{1,3}\).
+    First acting on \(\ve{1}\) gives
     \begin{align}
         \cycle{1,3} \action \ve{1} &=
         \tikzsetnextfilename{rep-of-Sn-step-1}
@@ -1340,13 +1521,13 @@ noabbrev
         = \ve{2}.
     \end{align}
     In the last step we identified that the projector is symmetric in the first two inputs, since these are symmetrised over.
-    So, we are free to swap the first two input wires, which leaves us with a permutation acting on the Young projector \(\projector{Y}\), which we identify as \(\ve{2}\).
+    So, we are free to swap the first two input wires, which leaves us with \(\ve{2}\).
     If we hadn't seen that this was possible then we could have applied the permutation to the Young tableau as we did for the first term, and then decomposed the result with the Garnir relations, and the answer would be the same, it's just slower.
     
     Now we have seen how this permutation, \(\cycle{1,3}\), acts on the basis vectors, \(\{\ve{1}, \ve{2}\}\), we can extend this by linearity to the whole representation space.
     We can then write this action as a matrix equation and read off the entries of the matrix.
     The one subtlety is that we placed the permutations on the left of the Young projector, but this corresponds to multiplying on the right by the permutation, so we act on the right with the matrix.
-    Thus, we can find the representation of \(\cycle{1,3}\):
+    Thus, we can find the representation of \(\cycle{1,3}\) by finding the matrix \(\rho\cycle{1,3}\) in the following
     \begin{equation}
         \begin{pmatrix}
             \ve{1} & \ve{2}
@@ -1363,7 +1544,7 @@ noabbrev
         .
     \end{equation}
 
-    To summarise the process given some \(\sigma \in \symmetricGroup\) and an \(n\) box Young diagram labelling a representation we can find the action of \(\sigma\) in this representation as follows:
+    To summarise the process given some permutation \(\sigma \in \symmetricGroup\) and an \(n\) box Young diagram, \(Y\), labelling a representation we can find the action of \(\sigma\) in this representation as follows:
     \begin{enumerate}
         \item Write down the \(d_Y = n!/\hooknumber{Y}\) standard tableaux of the same shape, these give the standard permutations, \(\tau_i\).
         \item Act on the Young projector, \(\projector{Y}\), with the standard permutations to get the basis elements, \(\ve{i} = \tau_i \action \projector{Y}\).
@@ -1382,70 +1563,105 @@ noabbrev
         for the \(d \times d\) representation matrix, \(\rho(\sigma)\).
     \end{enumerate}
     
-    Notice that at no point in this process did we ever actually have to use the Young projector, it is enough to know the symmetries which it possesses, which is fully determined by the shape of the Young diagram \(Y\).
-    We then exploit these symmetries in the step where we apply the Garnir relations.
+    Notice that at no point in this process did we ever actually have to use the Young projector, all we used were the symmetries it posses, and we didn't even need to use these, they just speed things up.
+    The only property of the Young diagram we use are the standard Young tableaux and the Garnir relations.
     
-    \section{Hermitian Young Projectors}
-    For Young diagrams with three or more boxes the associated Young projectors are not, in general, Hermitian.
-    Hermiticity is often a desirable property.
-    Fortunately it is possible to construct Hermitian Young projectors from the Young projectors we already have.
+    It is important that we don't have to use the Young projector in this computation because computations with Young projectors in diagrammatic notation cannot be done efficiently on a computer.
+    However, we can implement the Garnir relations and follow this procedure to compute the representation of a permutation.
+    We can then extend this process to any element of the group algebra \(\complex[\symmetricGroup]\) by extending the group homomorphism \(\rho\colon \symmetricGroup \to \generalLinear(V)\) to an algebra homomorphism \(\complex[\symmetricGroup] \to \generalLinear(V)\).
+    This allows us to compute the representation of Young projectors.
+    This is useful since we can then efficiently perform calculations on a computer using these matrix representations.
     
-    \begin{dfn}{Hermitian Young Projectors}{}
-        Denote by \(Y_{\Theta}\) the standard Young projector associated with the Young tableaux \(\Theta\).
-        Let \(\Theta\) be the Young tableaux we get by removing the box with the highest number.
-        Construct the following
-        \begin{equation}
-            P_{\Theta} \coloneqq
-            \begin{cases}
-                Y_{\Theta} & \text{if } \Theta \text{ is has 2 or fewer boxes},\\
-                (P_{\Theta'} \otimes 1) Y_{\Theta} (P_{\Theta'} \otimes 1) & \text{if } \Theta \text{ has 3 or more boxes}.
-            \end{cases}
-        \end{equation}
-    \end{dfn}
+    \chapter{Applications to \texorpdfstring{\(\specialUnitary(N)\)}{SU(N)}}
+    Recall that the special unitary group, \(\specialUnitary(N)\), is defined to be the group of unitary \(N \times N\) matrices with determinant 1.
+    In this section we will focus on the representation theory of \(\specialUnitary(N)\) with a goal of computing scalars, quantities invariant under \(\specialUnitary(N)\)/
+    The motivation for studying \(\specialUnitary(N)\) is its prevelance in quantum field theory, particularly as \(\specialUnitary(3)\) in quantum chromodynamics and \(\specialUnitary(2)\) in electroweak theory.
     
-    That \(P_{\Theta}\) are Hermitian is proven in \cite{keppeler-hermitian-young-projectors}.
+    \section{\texorpdfstring{\(\specialUnitary(N)\)}{SU(N)} in Quantum Field Theory}
+    A gauge theory is a quantum field theory with a local symmetry of the fields.
+    A local symmetry in turn is an action of some group, \(G\), on the fields which may depend on the position at which the field is evaluated, such that the Lagrangian is left invariant under this group action.
+    The prototypical example of a gauge theory is electromagnetism, where the gauge group is \(\unitary(1)\), and the symmetry is given by \(\psi \mapsto \e^{i\alpha}\psi\) for some \(\alpha \in \reals\).
     
-    The construction of \(P_{\Theta}\) is clearer in the diagrammatic notation, where the recursive definition is
+    Of more interest to us here are \(\specialUnitary(N)\) gauge theories.
+    We will focus on quantum chromodynamics, the gauge theory of the strong force, which is an \(\specialUnitary(3)\) gauge theory.
+    Here the 3 is the number of colours.
+    The two most important particles in quantum chromodynamics are quarks and gluons.
+    Quarks are fermions, meaning they are represented by spinors, whereas gluons are vector bosons, meaning they are represented by four-vector quantities.
+    As well as being in some spinor or Minkowski space, both of which are just representation spaces of \(\specialOrthogonal^+(1, 3)\) capturing the Lorentz transformations of the fields, quarks and gluons are also elements of some vector space transforming under \(\specialUnitary(3)\).
+    In particular, quarks are in the fundamental representation, which is three dimensional so is often denoted \(\rep{3}\).
+    Gluons are in the adjoint representation, which is eight dimensional, so is often denoted \(\rep{8}\).
+    
+    \section{Representations of \texorpdfstring{\(\specialUnitary(N)\)}{SU(N)}}
+    The irreducible representations of the unitary group, \(\unitary(N)\), can be labelled with \(k\) box standard Young tableaux with no more than \(N\) rows.
+    The reason is that we interpret a \(k\) box diagram as a \(k\) index tensor, which we in turn interpret as a product of \(k\) vectors, each giving the state of a particle.
+    So, a \(k\) box Young tableau corresponds to a \(k\) particle state.
+    Since \(\unitary(N)\) has \(N\) labels for the particles, generalising the 3 colour labels of \(\specialUnitary(3)\) or single charge label of \(\unitary(1)\), we cannot antisymmetrise over more than \(N\) boxes without getting zero.
+    
+    Moving to \(\specialUnitary(N)\) we add the restriction that the determinant is 1.
+    This means that we have an extra invariant tensor compared to \(\unitary(N)\), namely the Levi--Civita.
+    Contracting with the Levi--Civita tensor we can remove any column of length \(N\).
+    This means that representations of \(\specialUnitary(N)\) can be labelled with \(k\) box standard Young tableaux with no more than \(N - 1\) rows.
+    
+    Given a Young diagram, \(Y\), labelling a representation \(V\) of \(\specialUnitary(N)\) we can compute the dimension using the following formula:
     \begin{equation}
-        \tikzsetnextfilename{hermitian-young-projector}
-        \begin{tikzpicture}[baseline=(equal.base), font=\scriptsize]
-            \draw (0, -0.25) rectangle (1, 1.75) node [midway] (Ptheta) {\(P_{\Theta}\)};
-            \draw[wire] (-0.5, 0) -- (0, 0);
-            \draw[wire] (-0.5, 0.5) -- (0, 0.5);
-            \draw[wire] (-0.5, 1.5) -- (0, 1.5);
-            \node at (-0.25, 1) {\(\vdots\)};
-            \draw[wire] (1, 0) -- (1.5, 0);
-            \draw[wire] (1, 0.5) -- (1.5, 0.5);
-            \draw[wire] (1, 1.5) -- (1.5, 1.5);
-            \node at (1.25, 1) {\(\vdots\)};
-            \node[right=of Ptheta] (equal) {\(=\)};
-            \draw (3, 0.25) rectangle (4, 1.75) node [midway] {\(P_{\Theta'}\)};
-            \draw[wire] (2.5, 0) -- (4.5, 0);
-            \draw[wire] (2.5, 0.5) -- (3, 0.5);
-            \draw[wire] (2.5, 1.5) -- (3, 1.5);
-            \node at (2.75, 1) {\(\vdots\)};
-            \draw[wire] (4, 0.5) -- (4.5, 0.5);
-            \draw[wire] (4, 1.5) -- (4.5, 1.5);
-            \node at (4.25, 1) {\(\vdots\)};
-            \draw (4.5, -0.25) rectangle (5.5, 1.75) node [midway] {\(Y_{\Theta}\)};
-            \draw[wire] (5.5, 0) -- (7.5, 0);
-            \draw[wire] (5.5, 0.5) -- (6, 0.5);
-            \draw[wire] (5.5, 1.5) -- (6, 1.5);
-            \node at (5.75, 1) {\(\vdots\)};
-            \draw (6, 0.25) rectangle (7, 1.75) node [midway] {\(P_{\Theta'}\)};
-            \draw[wire] (7, 0.5) -- (7.5, 0.5);
-            \draw[wire] (7, 1.5) -- (7.5, 1.5);
-            \node at (7.25, 1) {\(\vdots\)};
-        \end{tikzpicture}
-        .
+        \dim V = \frac{f_Y(N)}{\hooknumber{Y}}.
     \end{equation}
-    Hermiticity in the diagrammatic notation corresponds to a vertical mirror symmetry, which is clearly present here.
+    Here \(f_Y\) is a polynomial in \(N\) given by placing \(N\) in the top left box of \(Y\), then increasing by one with each box to the right.
+    On the second row start with \(N - 1\) and increase going right as before.
+    On the third row start with \(N - 2\) and so on.
     
+    For example, consider
+    \begin{equation}
+        \ytableausetup{nosmalltableaux}
+        Y = \ytableaushort{{\scriptscriptstyle N}{\scriptscriptstyle N+1}{\scriptscriptstyle N+2}{\scriptscriptstyle N+3},{\scriptscriptstyle N-1}{\scriptscriptstyle N},{\scriptscriptstyle N-2}} \implies f_Y(N) = N^2(N + 1)(N + 2)(N + 3)(N - 1)(N - 2)
+        \ytableausetup{smalltableaux}
+    \end{equation}
+    which has hook number \(\hooknumber{Y} = 144\).
+    This labels a representation with dimension
+    \begin{equation}
+        \frac{N^2(N^2 - 1)(N^2 - 4)(N + 3)}{144}.
+    \end{equation}
+    Less abstractly, work in \(\specialUnitary(3)\) and consider the diagrams
+    \begin{equation}
+        Y_1 = \ydiagram{1}, \qqand Y_2 = \ydiagram{2,1}.
+    \end{equation}
+    We have
+    \begin{align}
+        f_{Y_1}(N) &= N &&\implies f_{Y_1}(3) = 3, \qqand\\
+        f_{Y_2}(N) &= N(N + 1)(N - 1) &&\implies f_{Y_2}(3) = 24.
+    \end{align}
+    Thus these label representations with dimensions
+    \begin{equation}
+        \frac{3}{1} = 3, \qqand \frac{24}{3} = 8.
+    \end{equation}
+    That is, these label \(\rep{3}\) and \(\rep{8}\), so correspond to quarks and gluons.
     
-    % TODO: Example of Hermitian Young projector construction
+    \section{Computing Scalars}
+    A scalar has no indices.
+    Thus in the diagrammatic notation it corresponds to a quantity with no external legs.
+    Scalars are invariant under the group action.
+    This means that these are exactly the objects we are interested in for building the Lagrangian of a field theory.
+    We present here a general method for simplifying scalars in \(\specialUnitary(N)\) until they are reduced to a few simple building blocks, which can then be dealt with by computing Young projectors.
+    
+    That Young projectors are relevant to \(\specialUnitary(N)\) may be surprising, since we first constructed them when discussing the symmetric group.
+    However, since Young tableaux label the irreducible representations of \(\specialUnitary(N)\) we can also construct and interpret Young projectors in \(\specialUnitary(N)\).
+    Here the understanding of the symmetrisers and antisymmetrisers is that they describe the symmetry of exchanging particles, with a \(k\) box Young diagram corresponding to a \(k\) particle state.
+    
+    Even more useful is the fact that we don't actually need to compute the Young projectors in \(\specialUnitary(N)\), only in \(\symmetricGroup\).
+    We've already seen how to compute the representation of Young projectors in \(\symmetricGroup\), so once we have reduced a scalar to some combination of Young projectors we are finished.
+    
+    \subsection{Recoupling Relations}
+    \subsection{Wigner \texorpdfstring{\(3j\) and \(6j\)}{3j and 6j} Symbols}
+    
     
     % TODO: Talk about difference between Young projectors as related to Sn and SU(N) irreps
     % TODO: Talk about 3j and 6js and how every diagram can be reduced to them
+    
+    % TODO: Citations
+    % TODO: Conclusion
+    % TODO: Abstract
+    % TODO: Personal statement
+    
     
     \printbibliography
     % Appdendix
