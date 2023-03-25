@@ -18,6 +18,7 @@
 \usetikzlibrary{positioning}
 \usetikzlibrary{decorations.markings}
 \usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
 
 \usepackage{tikz-cd}
 
@@ -78,6 +79,9 @@ noabbrev
 \tikzset{wire arrow reversed/.default=0.5}
 \tikzset{over wire/.style={wire, preaction={draw, background color, line width=#1}}}
 \tikzset{over wire/.default={1.5mm}}
+\tikzset{electron/.style={postaction={decorate, decoration={markings, mark=at position #1 with {\arrow{Latex[width=1.5mm]}}}}}}
+\tikzset{electron/.default=0.5}
+\tikzset{photon/.style={decoration={snake, amplitude=1.25, segment length=6}, decorate}}
 
 % Text
 \newcommand{\Mathematica}{\textit{Mathematica}}
@@ -128,6 +132,18 @@ noabbrev
 \newcommand{\minkowskiMetric}{\eta}
 \newcommand{\e}{\symrm{e}}
 \newcommand{\rep}[1]{\symbfup{#1}}
+\newcommand{\threej}[4][0.3]{%
+    \begin{tikzpicture}
+        \draw[wire] (0, 0) circle [radius=#1];
+        \draw[wire arrow reversed=0.3] (-#1, 0) -- (#1, 0) node [midway, above, font=\tiny, yshift=-0.05cm] {\(#2\)};
+        \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, #1) -- ++ (0.01, 0);
+        \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, -#1) -- ++ (0.01, 0);
+        \node[font=\tiny] at (30:0.41) {\(#3\)};
+        \node[font=\tiny] at (-30:0.4) {\(#2\)};
+        \fill (#1, 0) circle [radius = 0.05];
+        \fill (-#1, 0) circle [radius = 0.05];
+    \end{tikzpicture}%
+}
 
 \includeonly{}
 
@@ -616,6 +632,10 @@ noabbrev
         \end{tikzpicture}
         = n.
     \end{equation}
+    
+    Taking the Hermitian conjugate reverses the order of the indices.
+    Since indices are read anticlockwise if we take the mirror image of a tensor in the diagrammatic notation the order of the indices is reversed as anticlockwise becomes clockwise.
+    So the Hermitian conjugate corresponds to the mirror image of the tensor.
     
     Given two tensors, such as \(\tensor{T}{^{abc}_{de}}\) and \(\tensor{R}{^{f}_{ghi}}\), we can form their tensor product, which has components \(\tensor{(T \otimes R)}{^{abcf}_{deghi}} = \tensor{T}{^{abc}_{de}}\tensor{R}{^f_{ghi}}\).
     Diagrammatically, this is represented by simply placing the two tensors next to each other with no indices contracted:
@@ -1650,9 +1670,336 @@ noabbrev
     Even more useful is the fact that we don't actually need to compute the Young projectors in \(\specialUnitary(N)\), only in \(\symmetricGroup\).
     We've already seen how to compute the representation of Young projectors in \(\symmetricGroup\), so once we have reduced a scalar to some combination of Young projectors we are finished.
     
-    \subsection{Recoupling Relations}
-    \subsection{Wigner \texorpdfstring{\(3j\) and \(6j\)}{3j and 6j} Symbols}
+    The general procedure for doing this is based on sections 4.2, 5.1, and 5.2 of \cite{cvitanovic}.
+    The following sections summarise the key parts of these sections and add in additional explanations.
     
+    \subsection{Projectors}
+    Consider a \(d \times d\) Hermitian matrix \(M\) acting on the space \(d = n^{p + q}\) dimensional space \(\symcal{V} = V^{\otimes p} \otimes \dual{V}^{\otimes q}\), with \(n = \dim V\).
+    This can be diagonalised by some unitary matrix, \(D\), then we have
+    \begin{equation}
+        DMD^{\hermit} = 
+        \begin{pmatrix}
+            \lambda_1\identityMatrix_{V_1} & & \\
+            & \ddots & \\
+            & & \lambda_k\identityMatrix_{V_k}
+        \end{pmatrix}
+    \end{equation}
+    where \(\lambda_i\) are the eigenvalues of \(M\) and \(\identityMatrix_{V_i}\) are the identity matrices on the eigenspaces \(V_i\), which are the subspaces of \(V\) such that \(Mv = \lambda_iv\) for all \(v \in V_i\).
+    Now consider \(D(M - \lambda_i\identityMatrix_V)D^{\hermit}\).
+    By construction this has the same eigenspaces as \(M\), but the eigenspace corresponding to \(\lambda_i\) now has eigenvalue zero.
+    The eigenvalues on the eigenspace \(V_j\) are then shifted to \(\lambda_j - \lambda_i\).
+    Take a product of these terms over all but one eigenspace.
+    The result is
+    \begin{equation}
+        D \prod_{\substack{j = 1\\ j \ne i}}^{k} (M - \lambda_i\identityMatrix_{\symcal{V}})D^\hermit = \prod_{\substack{j=1\\ j \ne i}} (\lambda_i - \lambda_j)
+        \begin{pmatrix}
+            0\identityMatrix_{V_1} \\
+            & \ddots \\
+            && \identityMatrix_{V_i} \\
+            &&& \ddots \\
+            &&&& 0\identityMatrix_{V_k}
+        \end{pmatrix}
+        .
+    \end{equation}
+    We can identify the matrix here as being the projection operator onto the \(V_i\) subspace.
+    Then we can write the projection operator as
+    \begin{equation}
+        \projector{i} = D^\hermit \prod_{\substack{j=1\\ j\ne i}} \frac{M - \lambda_i\identityMatrix_{\symcal{V}}}{\lambda_i - \lambda_j} D.
+    \end{equation}
+    These projection operators are orthogonal, \(\projector{i}\projector{j} = \delta_{ij}\), and complete,
+    \begin{equation}
+        \sum_{i=1}^{k} \projector{i} = \identityMatrix_{\symcal{V}}.
+    \end{equation}
+    The dimension of the \(i\)th subspace is given by \(d_i = \tr(D \projector{i} D^\hermit) = \tr(\projector{i}D^\hermit D) =\tr(\projector{i})\).
+    
+    \subsection{Clebsch--Gordan Coefficients}
+    Now consider the product
+    \begin{equation}
+        \begin{pmatrix}
+            0\identityMatrix_{V_1} \\
+            & \ddots \\
+            && \identityMatrix_{V_i} \\
+            &&& \ddots \\
+            &&&& 0\identityMatrix_{V_k}
+        \end{pmatrix}
+        D
+    \end{equation}
+    which appears as part of the definition of the projector \(\projector{i}\).
+    The matrix we get upon computing this product has non-zero entries only in a \(d_i \times d\) block.
+    We call this block \(C_i\).
+    These blocks are called \defineindex{Clebsch--Gordan coefficients}.
+    The elements of this matrix are \((C_i)_\sigma^\alpha\), where \(\alpha = 1, \dotsc, d\) and \(\sigma = 1, \dotsc, d_i\).
+    Here \(\alpha\) stands for all tensor indices associated with the \(d = n^{p + q}\) dimensional tensor space \(V^{\otimes p} \otimes \dual{V}^{\otimes q}\).
+    This means we can replace the single index \(\alpha\) with \(d\) individual indices, \(\tensor{\mathstrut}{^\alpha} = \tensor*{\mathstrut}{^{b_p \dotso b_1}_{a_q\dotso a_1}}\), where \(a_j, b_j = 1, \dotsc, n\).
+    
+    In birdtracks we denote Clebsch--Gordan coefficients as
+    \begin{equation}
+        \tensor*{{(C_i)_{\sigma,}}}{^{b_p\dotso b_1}_{a_q\dotso a_1}} = 
+        \tikzsetnextfilename{scalars-clebsch}
+        \begin{tikzpicture}[baseline=(sigma.base)]
+            \draw[wire arrow reversed=0.425] (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] (sigma) {\(\sigma\)} -- (0, 0) node [midway, above, font=\scriptsize] {\(i\)};
+            \draw (0, 0) -- (30:1) -- (-30:1) coordinate (right) -- cycle;
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.4) -- ++ (1, 0) node [right, font=\scriptsize, xshift=-0.1cm] {\(b_1\)};
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.2) -- ++ (1, 0) node [right, font=\scriptsize, xshift=-0.1cm] {\(b_2\)};
+            \draw[wire arrow=0.575] (right |- 0, -0.2) -- ++ (1, 0) node [right, font=\scriptsize, xshift=-0.1cm, yshift=-0.05cm] {\(a_{q-1}\)};
+            \draw[wire arrow=0.575] (right |- 0, -0.4) -- ++ (1, 0) node [right, font=\scriptsize, xshift=-0.1cm, yshift=-0.05cm] {\(a_q\)};
+            \node at ($(right |- 0, 0) + (0.5, 0)$) {\scriptsize\(\vdots\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    This is a map \(V \to V_i\), where \(V_i\) is viewed as a subspace of \(V\), so we can treat it as having dimension \(d_i\) or dimension \(d\).
+    The label \(i\) labels the subspace onto which we are projecting.
+    We also have the conjugate mapping \(V_i \to \dual{V}\) which we get by instead considering the product
+    \begin{equation}
+        D^\hermit
+        \begin{pmatrix}
+            0\identityMatrix_{V_1} \\
+            & \ddots \\
+            && \identityMatrix_{V_i} \\
+            &&& \ddots \\
+            &&&& 0\identityMatrix_{V_k}
+        \end{pmatrix}
+        ,
+    \end{equation}
+    which again is non-zero only on a \(d \times d_i\) block, \(C^i\), whose components we denote by
+    \begin{equation}
+        {\tensor*{(C^i)}{^{a_1\dotso a_q}_{b_1 \dotso b_p}}}^{,\sigma} = 
+        \tikzsetnextfilename{scalars-clebsch-conjguate}
+        \begin{tikzpicture}[baseline=(sigma.base)]
+            \draw (0, 0.5) -- (0, -0.5) coordinate (left) -- ++ (30:1) coordinate (right) -- cycle;
+            \draw[wire arrow=0.575] (left |- 0, 0.4) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(b_1\)};
+            \draw[wire arrow=0.575] (left |- 0, 0.2) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm] {\(b_2\)};
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.2) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm, yshift=-0.05cm] {\(a_{q-1}\)};
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.4) -- ++ (-1, 0) node [left, font=\scriptsize, xshift=0.1cm, yshift=-0.05cm] {\(a_q\)};
+            \node at ($(left |- 0, 0) + (-0.5, 0)$) {\scriptsize\(\vdots\)};
+            \draw[wire arrow reversed=0.425] (right) -- ++ (1, 0) node [midway, above, font=\scriptsize] {\(i\)} node [right, xshift=-0.1cm, font=\scriptsize] (sigma) {\(\sigma\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    
+    We can recover the projection operators from the Clebsch--Gordan coefficients:
+    \begin{equation}
+        \projector{i} = C^i C_i \qquad \text{(no sum on \(i\))}
+    \end{equation}
+    or in the diagrammatic notation
+    \begin{equation}
+        \tikzsetnextfilename{scalars-clebsch-square-to-projector}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw (0, 0.5) -- (0, -0.5) coordinate (left) -- ++ (30:1) coordinate (right) -- cycle;
+            \draw[wire arrow=0.575] (left |- 0, 0.4) -- ++ (-1, 0);
+            \draw[wire arrow=0.5775] (left |- 0, 0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.4) -- ++ (-1, 0);
+            \node at ($(left |- 0, 0) + (-0.5, 0)$) {\scriptsize\(\vdots\)};
+            \draw[wire arrow reversed=0.425] (right) -- ++ (1, 0) node [midway, above, font=\scriptsize] {\(i\)} coordinate (A);
+            \draw (A) -- ++ (30:1) -- ++ (0, -1) coordinate (right) -- cycle;
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.4) -- ++ (1, 0);
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.4) -- ++ (1, 0);
+            \node at ($(right |- 0, 0) + (0.5, 0)$) {\scriptsize\(\vdots\)};
+            \node (equal) at (4, 0) {\(=\)};
+            \coordinate (left) at (5.27, 0);
+            \coordinate (right) at (6.27, 0);
+            \draw (left |- 0, -0.5) rectangle (right |- 0, 0.5) node [midway] {\(\projector{i}\)};
+            \draw[wire arrow=0.575] (left |- 0, 0.4) -- ++ (-1, 0);
+            \draw[wire arrow=0.5775] (left |- 0, 0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.4) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.4) -- ++ (1, 0);
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.4) -- ++ (1, 0);
+            \node at ($(left |- 0, 0) + (-0.5, 0)$) {\scriptsize\(\vdots\)};
+            \node at ($(right |- 0, 0) + (0.5, 0)$) {\scriptsize\(\vdots\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    
+    The completeness relation, \(\sum_i \projector{i} = \identity_{\symcal{V}}\), becomes \(\sum_i C^iC_i = \identity_{\symcal{V}}\), or in the diagrammatic notation
+    \begin{equation}
+        \sum_{i=1}^{k}
+        \tikzsetnextfilename{scalars-completeness-of-clebsch}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw (0, 0.5) -- (0, -0.5) coordinate (left) -- ++ (30:1) coordinate (right) -- cycle;
+            \draw[wire arrow=0.575] (left |- 0, 0.4) -- ++ (-1, 0);
+            \draw[wire arrow=0.5775] (left |- 0, 0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.4) -- ++ (-1, 0);
+            \node at ($(left |- 0, 0) + (-0.5, 0)$) {\scriptsize\(\vdots\)};
+            \draw[wire arrow reversed=0.425] (right) -- ++ (1, 0) node [midway, above, font=\scriptsize] {\(i\)} coordinate (A);
+            \draw (A) -- ++ (30:1) -- ++ (0, -1) coordinate (right) -- cycle;
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.4) -- ++ (1, 0);
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.4) -- ++ (1, 0);
+            \node at ($(right |- 0, 0) + (0.5, 0)$) {\scriptsize\(\vdots\)};
+            \node (equal) at (4, 0) {\(=\)};
+            \coordinate (left) at (5.27, 0);
+            \coordinate (right) at (6.27, 0);
+            \draw[wire arrow=0.575] (left |- 0, 0.4) -- ++ (-1, 0);
+            \draw[wire arrow=0.5775] (left |- 0, 0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.2) -- ++ (-1, 0);
+            \draw[wire arrow reversed=0.425] (left |- 0, -0.4) -- ++ (-1, 0);
+            \node at ($(left |- 0, 0) + (-0.5, 0)$) {\scriptsize\(\vdots\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    
+    By construction the Clebsch--Gordan coefficients are orthogonal, in the sense that \(C_i C^j = \tensor{\delta}{_i^j}\identityMatrix_{\symcal{V}}\), where \(C_i\) are viewed as matrices acting on \(\symcal{V}\) sending anything outside of the \(V_i\) subspace to zero.
+    In diagrammatic notation
+    \begin{equation}\label{eqn:clebsch orthogonal}
+        \tikzsetnextfilename{scalars-orthogonal-clebsch}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw (1.86, 0.5) -- ++ (0, -1) coordinate (left) -- ++ (30:1) coordinate (right) -- cycle;
+            \draw[wire arrow reversed=0.425] (right) -- ++ (1, 0) node [midway, above, font=\scriptsize] {\(j\)};
+            \draw[wire arrow=0.575] (0, 0) -- ++ (-1, 0) node [midway, above, font=\scriptsize] {\(i\)};
+            \draw (0, 0) -- ++ (30:1) -- ++ (0, -1)  coordinate (right) -- cycle;
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.4) -- ++ (1, 0);
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.2) -- ++ (1, 0);
+            \draw[wire arrow=0.575] (right |- 0, -0.4) -- ++ (1, 0);
+            \node at ($(right |- 0, 0) + (0.5, 0)$) {\scriptsize\(\vdots\)};
+            \node (equal) at (4, 0) {\(=\)};
+            \draw[wire arrow reversed=0.425] (4.27, 0) node [above, font=\scriptsize] {\(i\)} -- ++ (1, 0) node [above, font=\scriptsize] {\(j\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    
+    The traditional approach to representation theory is to compute the values of the Clebsch--Gordan coefficients and then use these in calculations, such as writing tensor products of representations as direct sums of irreducible representations.
+    This simply becomes an exercise in looking up different components of the Clebsch--Gordan coefficients.
+    Unfortunately the plethora of different notations and conventions for signs and normalisations of Clebsch--Gordans can make this quite a difficult task.
+    We instead work with the projection operators, which allows us to avoid much of this tedious work.
+    
+    \subsection{Recoupling Relations}
+    We now consider Clebsch--Gordan coefficients \(V_\mu \otimes V_\nu \to V_\lambda\), where each of these spaces is viewed as a subspace of some space \(\symcal{V}\).
+    These Clebsch--Gordan coefficients can be drawn as
+    \begin{equation}
+        \tikzsetnextfilename{scalars-clebsch-2}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \draw (0, 0) -- (30:1) -- (-30:1) coordinate (right) -- cycle;
+            \draw[wire arrow reversed=0.425] (0, 0) -- (-1, 0) node [midway, above, font=\scriptsize] {\(\lambda\)};
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.25) -- ++ (1, 0) node [midway, above, font=\scriptsize] {\(\mu\)};
+            \draw[wire arrow reversed=0.425] (right |- 0, -0.25) -- ++ (1, 0) node [midway, below, font=\scriptsize] {\(\nu\)};
+        \end{tikzpicture}
+    \end{equation}
+    and its Hermitian conjugate.
+    
+    Rather than work with the Clebsch--Gordan coefficients directly we work with 3-vertices defined by
+    \begin{equation}
+        \tikzsetnextfilename{scalars-3-vertex}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw (0, 0) -- (30:1) -- (-30:1) coordinate (right) -- cycle;
+            \draw[wire arrow reversed=0.425] (0, 0) -- (-1, 0) node [midway, above, font=\scriptsize] {\(\lambda\)};
+            \draw[wire arrow reversed=0.425] (right |- 0, 0.25) -- ++ (1, 0) node [midway, above, font=\scriptsize] {\(\mu\)};
+            \draw[wire arrow reversed=0.425] (right |- 0, -0.25) -- ++ (1, 0) node [midway, below, font=\scriptsize] {\(\nu\)};
+            \node (equal) at (2.4, -0.05) {\(\displaystyle {} = \frac{1}{\sqrt{a_\lambda}}\)};
+            \draw[wire arrow reversed=0.3] (3, 0) -- ++ (0.75, 0) node [midway, above, font=\scriptsize] {\(\lambda\)};
+            \fill (3.75, 0) circle [radius=0.05];
+            \draw[wire arrow reversed=0.3, xshift=3.75cm] (45:0.75) -- (0, 0) node [midway, above, font=\scriptsize] {\(\mu\)};
+            \draw[wire arrow reversed=0.3, xshift=3.75cm] (-45:0.75) -- (0, 0) node [midway, below, font=\scriptsize] {\(\nu\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    The normalisation is defined by
+    \begin{equation}
+        a_{\lambda} = \frac{
+            \tikzsetnextfilename{scalars-3j}
+            \begin{tikzpicture}
+                \draw[wire] (0, 0) circle [radius=0.3];
+                \draw[wire arrow reversed=0.3] (-0.3, 0) -- (0.3, 0) node [midway, above, font=\tiny, yshift=-0.05cm] {\(\lambda\)};
+                \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, 0.3) -- ++ (0.01, 0);
+                \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, -0.3) -- ++ (0.01, 0);
+                \node[font=\tiny] at (30:0.41) {\(\mu\)};
+                \node[font=\tiny] at (-30:0.4) {\(\nu\)};
+                \fill (0.3, 0) circle [radius = 0.05];
+                \fill (-0.3, 0) circle [radius = 0.05];
+            \end{tikzpicture}
+        }{d_\lambda}.
+    \end{equation}
+    We call this diagram a \define{\(3j\) coefficient}\index{3j coefficient@\(3j\) coefficient}.
+    This normalisation choice is such that
+    \begin{equation}
+        \tikzsetnextfilename{scalars-3-vertex-normalisation}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw[wire] (0, 0) circle [radius=0.3];
+            \draw[wire arrow reversed=0.3] (-1, 0) -- (-0.3, 0) node [midway, above, font=\tiny, yshift=-0.05cm] {\(\lambda\)};
+            \draw[wire arrow reversed=0.3] (0.3, 0) -- (1, 0) node [midway, above, font=\tiny, yshift=-0.05cm] {\(\sigma\)};
+            \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, 0.3) -- ++ (0.01, 0);
+            \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, -0.3) -- ++ (0.01, 0);
+            \node[font=\tiny] at (90:0.45) {\(\mu\)};
+            \node[font=\tiny] at (-90:0.45) {\(\nu\)};
+            \fill (0.3, 0) circle [radius = 0.05];
+            \fill (-0.3, 0) circle [radius = 0.05];
+            \node (equal) at (1.4, -0.05) {\({} = a_{\lambda}\)};
+            \draw[wire arrow reversed=0.425] (1.9, 0) node [above, font=\scriptsize] {\(\lambda\)} -- ++ (1, 0) node [above, font=\scriptsize] {\(\sigma\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    Notice that this is simply the orthogonality of the Clebsch--Gordan coefficients (\cref{eqn:clebsch orthogonal}) in terms of the 3-vertices.
+    We do not fix the normalisation, \(a_\lambda\), in an attempt to be as general as possible.
+    
+    These \(3j\) coefficients are actually very common in physics, we just don't always call them \(3j\)s.
+    If we work in \(\specialUnitary(2)\) in the fundamental representation taking \(a_\lambda = 1/2\) then these \(3j\)s are the Pauli matrices, \(\sigma_i\).
+    If we work in \(\specialUnitary(2)\) (\(\specialUnitary(3)\)), take \(\lambda\) to be the adjoint representation, take \(\mu\) and \(\nu\) to be the fundamental representation, and take \(a_\lambda = 1/2\) then these \(3j\)s are the Pauli matrices, \(\sigma^i\) (Gell-Mann matrices \(\lambda^i\)) \cite[33]{cvitanovic}.
+    If we work in \(\specialOrthogonal^{+}(1, 3)\), take \(\lambda\) to be the four dimensional vector representation, and take \(\mu\) and \(\nu\) to be the four dimensional spinor representation then these \(3j\)s are Dirac's gamma matrices, \(\gamma^\mu\) \cite{kennedy}.
+    Compare this with the QED vertex,
+    \begin{equation}
+        \tikzsetnextfilename{scalars-qed-vertex}
+        \begin{tikzpicture}[baseline=-0.05cm]
+            \draw[photon] (-0.75, 0) node [left, font=\scriptsize] {\(\mu\)} -- (0, 0);
+            \draw[electron=0.65] (0, 0) -- (45:0.75);
+            \draw[electron=0.65] (-45:0.75) -- (0, 0);
+        \end{tikzpicture}
+        = ie\gamma^\mu
+    \end{equation}
+    which has two electrons (spinors) and a photon (vector) and is proportional to \(\gamma^\mu\).
+    
+    For simplicity we now drop arrows on our wires, they can be reinstated by picking one arrow and then ensuring that no vertex has two arrows pointing into it, similar to the interpretation of lines in a Feynman diagram as currents.
+    In terms of 3-vertices the completeness relation is
+    \begin{equation}
+        \tikzsetnextfilename{scalars-completeness-with-3-vertices}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \node (equal) at (-1.5, -0.2) {\(\displaystyle {} = \sum_{\lambda} \frac{d_\lambda}{\threej{\lambda}{\mu}{\nu}}\)};
+            \draw[wire] (0, 0) -- (1, 0) node [midway, above, font=\scriptsize] {\(\lambda\)};
+            \draw[wire] (0, 0) -- (135:0.75);
+            \draw[wire] (0, 0) -- (-135:0.75);
+            \draw[wire] (1, 0) -- ++ (45:0.75);
+            \draw[wire] (1, 0) -- ++ (-45:0.75);
+            \fill (0, 0) circle [radius=0.05];
+            \fill (1, 0) circle [radius=0.05];
+            \draw[wire] (-2.5, {0.75*sqrt(2)/2}) -- ++ (-1, 0) node [midway, below, font=\scriptsize] {\(\mu\)};
+            \draw[wire] (-2.5, {-0.75*sqrt(2)/2}) -- ++ (-1, 0) node [midway, above, font=\scriptsize] {\(\nu\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    This relation takes two unconnected lines and connects them.
+    For this reason we call it the \defineindex{recoupling relation}.
+    
+    Now consider the diagram
+    \begin{equation}
+        \tikzsetnextfilename{scalars-t-channel}
+        \begin{tikzpicture}[baseline=(current bounding box), font=\scriptsize]
+            \draw[wire] (0, 0) -- (2, 0) node [pos=0.25, below, yshift=0.075cm] {\(\rho\)} node [pos=0.75, below, yshift=0.075cm] {\(\nu\)};
+            \draw[wire] (0, 1) -- (2, 1) node [pos=0.25, above, yshift=-0.075cm] {\(\sigma\)} node [pos=0.75, above, yshift=-0.075cm] {\(\mu\)};
+            \draw[wire] (1, 0) -- (1, 1) node [midway, right, xshift=-0.075cm] {\(\omega\)};
+            \fill (1, 0) circle [radius=0.05];
+            \fill (1, 1) circle [radius=0.05];
+        \end{tikzpicture}
+        .
+    \end{equation}
+    Using the recoupling relation twice, once on the two incoming wires and once on the two outgoing wires we get
+    \begin{equation}
+        content...
+    \end{equation}
+    
+    
+    
+    
+    % TODO:
+    % I -> Σ 6j/(3j 3j) >-<
+    % loop reduction
+    % Actually computing 3js and 6js using traces of products of Young projectors
     
     % TODO: Talk about difference between Young projectors as related to Sn and SU(N) irreps
     % TODO: Talk about 3j and 6js and how every diagram can be reduced to them
