@@ -201,15 +201,15 @@ noabbrev
     % \listoffigures
     % \listoftables
     \chapter{Personal Statement}
-    I spent the first few weeks familiarising myself with the basics of group theory and representation theory, building on my existing knowledge mostly through study of \cite{cvitanovic}.
+    I spent the first few weeks of this project familiarising myself with the basics of group theory and representation theory, building on my existing knowledge mostly through study of \cite{cvitanovic}.
     This text also introduces birdtracks, the main notation used for most of this work.
     I then moved on to studying the representation theory of the symmetric group, in particular looking at Young diagrams and Young projectors.
     Once I felt I had a good understanding of these I also started writing code, in \Mathematica{}.
     The rest of the project then followed a general pattern of studying a piece of mathematics and then writing code to implement the useful features of this mathematics.
     In this way in the first semester I studied Young diagrams, Young projectors, the Garnir relations, and representations of the symmetric group and begun implementing code for each of these, culminating in code which can compute the representation of a permutation in a given representation given by a Young diagram.
-    I spent the first week implementing Young diagrams and Young tableaux so that they would display automatically.
+    After a couple of weeks of background research I spent the about a week implementing Young diagrams and Young tableaux so that they would display automatically.
     It then took approximately three weeks to implement the Garnir relations, allowing me to decompose arbitrary Young tableaux in terms of standard Young tableaux.
-    From here it took about four more weeks to understand and implement the calculation of representations.
+    From here it took about four more weeks to understand and implement the calculation of representations, spilling over into the beginning of the second semester.
     The rest of the first semester I worked on implementing Young projectors.
     I also looked into Hermitian Young projectors, and implemented a method for computing these given Young projectors.
     
@@ -222,7 +222,8 @@ noabbrev
     I spent about a week writing code which computed the hook formula, giving the dimension of a representation.
     I then begun writing code to use Young projectors to compute \(3j\) and \(6j\) coefficients.
     Throughout this time I was also taking a course on gauge theories, which had many applications of the mathematics I studied during this project, and a course on category theory, which generalises a lot of the ideas studied here and makes them rigorous.
-    
+    \section{Acknowledgements}
+    I would like to thank Tony Kennedy for supervising this project, providing guidance, advice, clarifications, and many interesting conversations.
     \mainmatter
     
     \chapter{Introduction}
@@ -233,7 +234,7 @@ noabbrev
     These definitions are the focus of the first part of this report, and the resulting methods of simplification are the focus of the second part.
     
     Throughout this project I have been working to simultaneously understand the mathematics behind tensors and to write code which implements the procedures which come out of this mathematics for simplification of tensor expressions.
-    This report should lead the reader through the relevant mathematics and occasionally highlight relevant parts of the code\footnote{the code can be found on github: \url{https://github.com/WilloughbySeago/MPhysProjectCode}}.
+    This report should lead the reader through the relevant mathematics and occasionally highlight relevant parts of the code\footnote{the code can be found on github: \url{https://github.com/WilloughbySeago/MPhysProjectCode}, henceforth known as \enquote{the code}}.
     This code, mostly written in \Mathematica{}, has also been used to perform many of the calculations found in examples in this report.
     Before we jump straight into the maths we will give a brief overview of the key ideas introducing only a minimal amount of mathematics.
     
@@ -336,7 +337,7 @@ noabbrev
     This leads to the following definition.
     
     \begin{dfn}{Group}{}
-        A \defineindex{group}, \((G, \cdot)\), is a set, \(G\), and a binary operation, \(\cdot \colon G \times G \to G\) such that the following axioms are satisfied \cite{riley-hobson-bence}:
+        A \defineindex{group}, \((G, \cdot)\), is a set, \(G\), and a binary operation, \(\cdot \colon G \times G \to G\) such that the following axioms are satisfied \cite[1043]{riley-hobson-bence}:
         \begin{description}
             \item[Identity]\index{identity} there exists some distinguished element, \(\identity \in G\), such that for all \(x \in G\) we have \(\identity \cdot x = x \cdot \identity = x\);
             \item[Inverse]\index{inverse} for all \(x \in G\) there exists some \(x^{-1} \in G\) such that \(x \cdot x^{-1} = x^{-1} \cdot x = \identity\);
@@ -347,7 +348,7 @@ noabbrev
     We follow the common abuse of terminology and refer to \(G\) alone as the group with the operation left implicit.
     We will also write most group operations as juxtaposition, writing \(xy\) for \(x \cdot y\).
     
-    The prototype for a group is the \defineindex{symmetric group} on \(n\) objects, \(\symmetricGroup\) \cite{james-rep-symmetric-group}.
+    The prototype for a group is the \defineindex[2]{symmetric group} on \(n\) objects, \(\symmetricGroup\) \cite{james-rep-symmetric-group}.
     This is defined as the set
     \begin{equation}
         \symmetricGroup \coloneqq \{ \sigma \colon \{1, \dotsc, n\} \to \{1, \dotsc, n\} \mid \sigma \text{ is a bijection} \}
@@ -356,35 +357,43 @@ noabbrev
     We will use cycle notation for elements of \(\symmetricGroup\), where a cycle sends each element to the next in the list and the last element in the list to the first.
     For example, \(\cycle{1,3,4}\) sends \(1\) to \(3\), \(3\) to \(4\), and \(4\) to \(1\).
     In this notation the identity is the empty cycle, \(\cycle{}\).
+    A permutation is \defineindex{even} if it can be written as a product of an even number of two-cycles, or \define{transpositions}\index{transposition}, and is \defineindex{odd} otherwise.
     
-    Given two groups, \(G\) and \(H\), we can form a new group, called the \defineindex{direct product} \(G \otimes W\), whose elements are pairs \((g, h) \in G \times H\), that is \(g \in G\) and \(h \in H\), with the group operation \((g, h)(g', h') = (gg', hh')\) for \(g, g' \in G\) and \(h, h' \in H\).
+    Given two groups, \(G\) and \(H\), we can form a new group, called the \defineindex{direct product} \(G \otimes W\), whose elements are pairs \((g, h) \in G \times H\), that is \(g \in G\) and \(h \in H\), with the group operation \((g, h)(g', h') = (gg', hh')\) for \(g, g' \in G\) and \(h, h' \in H\) \cite[17]{allanach}.
     
     Another important family of groups are various collections of matrices with matrix multiplication as the group operation.
     In this case the group identity is the identity matrix of  the appropriate dimension, \(\identityMatrix\).
-    Let \(\matrices{n}{R}\) denote the set of \(n \times n\) matrices with entries in a ring \(R\).
-    The following are all groups under matrix multiplication \cite{allanach}:
+    Let \(\matrices{N}{R}\) denote the set of \(N \times N\) matrices with entries in a ring \(R\).
+    The following are all groups under matrix multiplication \cite[22]{allanach}:
     \begin{itemize}
-        \item \defineindex{general linear group} \(\generalLinear(n, \field) \coloneqq \{M \in \matrices{n}{R} \mid M \text{ is invertible} \}\);
-        \item \defineindex{special linear group} \(\specialLinear(n, \field) \coloneqq \{M \in \generalLinear(n, R) \mid \det M = 1\}\);
-        \item \defineindex{orthogonal group} \(\orthogonal(n) \coloneqq \{O \in \matrices{n}{\reals} \mid O^\trans O = \identityMatrix \}\);
-        \item \defineindex{special orthogonal group} \(\specialOrthogonal(n) \coloneqq \{O \in \orthogonal(n) \mid \det O = 1\}\);
-        \item \defineindex{unitary group} \(\unitary(n) \coloneqq \{U \in \matrices{n}{\complex} \mid U^\hermit U = \identityMatrix \}\);
-        \item \defineindex{special unitary group} \(\specialUnitary(n) \coloneqq \{U \in \unitary(n) \mid \det U = 1\}\).
-        \item (proper orthochronous) \defineindex{Lorentz group} \(\specialOrthogonal^+(1, 3) \coloneqq \{\Lambda \in \Mat(\reals, 4) \mid \Lambda^{\trans}\minkowskiMetric \Lambda = \minkowskiMetric \land \det \Lambda = 1 \land \tensor{\Lambda}{^0_0} \ge 1\}\).
+        \item \defineindex{general linear group} \(\generalLinear(N, R) \coloneqq \{M \in \matrices{N}{R} \mid M \text{ is invertible} \}\);
+        \item \defineindex{special linear group} \(\specialLinear(N, R) \coloneqq \{M \in \generalLinear(n, R) \mid \det M = 1\}\);
+        \item \defineindex{orthogonal group} \(\orthogonal(N) \coloneqq \{O \in \matrices{N}{\reals} \mid O^\trans O = \identityMatrix \}\);
+        \item \defineindex{special orthogonal group} \(\specialOrthogonal(N) \coloneqq \{O \in \orthogonal(N) \mid \det O = 1\}\);
+        \item \defineindex{unitary group} \(\unitary(N) \coloneqq \{U \in \matrices{N}{\complex} \mid U^\hermit U = \identityMatrix \}\);
+        \item \defineindex{special unitary group} \(\specialUnitary(N) \coloneqq \{U \in \unitary(n) \mid \det U = 1\}\).
+        \item (proper orthochronous) \defineindex{Lorentz group} \(\specialOrthogonal^+(1, 3) \coloneqq \{\Lambda \in \matrices{4}{\reals} \mid \Lambda^{\trans}\minkowskiMetric \Lambda = \minkowskiMetric \land \det \Lambda = 1 \land \tensor{\Lambda}{^0_0} \ge 1\}\).
     \end{itemize}
-    Most of the transformations we are interested in will form a Lie group like one of these examples, for example, \(\specialOrthogonal(n)\) corresponds to rotations in \(n\) dimensions and \(\specialOrthogonal^+(1, 3)\) corresponds to Lorentz transformations.
-    These matrix groups are actually examples of a Lie group.
     
+    It is also possible to characterise these groups as transformations preserving some structure.
+    The most general is \(\generalLinear(n, \field)\) for some field \(\field\), which simply preserves the vector space structure\footnote{or module structure if \(R\) is a ring}.
+    Then \(\specialLinear(n, R)\) additionally preserves volumes, since volumes scale with the determinant of the transformation.
+    The orthogonal group, \(\orthogonal(n)\) preserves angles and lengths, or more formally preserves the inner product \(x \cdot y = x^\trans y\).
+    The unitary group is the complex version of the orthogonal group, and the \(\unitary(n)\) preserves the inner product \(\braket{x}{y} = x^\hermit y\).
+    The Lorentz group preserves the inner product \(x \cdot y = x^\mu y^\nu \minkowskiMetric_{\mu\nu}\).
+    
+    These matrix groups are actually examples of a Lie group.
+    A special kind of group which is continuously parametrised by some set of numbers.
     \begin{dfn}{Lie Group}{}
-        A \defineindex{Lie group}, \(G\), is a group which is also a manifold in a compatible way \cite{san-martin-lie-groups}.
+        A \defineindex{Lie group}, \(G\), is a group which is also a manifold in a compatible way \cite[87]{san-martin-lie-groups}.
         In particular, the product map, \(\cdot \colon G \times G \to G\), is analytic.
     \end{dfn}
     
-    Given a Lie group, \(G\), it is possible to parametrise the group elements as \(g = \exp\{i\vartheta_aT^a\}\) for some objects \(T^a\), which we call the \define{generators}\index{generator} of \(G\), and scalars \(\vartheta_a \in \field\) and \(a = 1, \dotsc, \dim G\).
-    The generators \(T^a\) span a vector space, \(\lie{g}\), over a field, \(\field\), called the \defineindex{Lie algebra} of \(G\).
+    Given a Lie group, \(G\), it is possible to parametrise the group elements as \(g = \exp\{i\vartheta_aT^a\}\) for some objects \(T^a\), which we call the \define{generators}\index{generator} of \(G\), and scalars \(\vartheta_a \in \field\) with \(a = 1, \dotsc, \dim G\) \cite[98]{san-martin-lie-groups}.
+    The generators \(T^a\) span a vector space, \(\lie{g}\), over the field \(\field\), called the \defineindex{Lie algebra} of \(G\).
     An \defineindex{algebra} is a vector space, \(V\), equipped with a product of vectors, \(V \times V \to V\), which is compatible with vector addition and multiplication, see \cref{sec:algebras} for details.
     The product in the case of a Lie algebra is the \defineindex{Lie bracket}, \(\commutator{-}{-} \colon \lie{g} \times \lie{g} \to \lie{g}\).
-    This has the following properties:
+    This has the following properties \cite[92]{san-martin-lie-groups}:
     \begin{itemize}
         \item linearity in both arguments: \(\commutator{ax + by}{z} = a\commutator{x}{z} + b\commutator{y}{z}\) and \(\commutator{x}{ay + bz} = a\commutator{x}{y} + b\commutator{x}{z}\) for all \(a, b \in \field\) and \(x, y, z \in \lie{g}\),
         \item antisymmetry: \(\commutator{x}{x} = 0\) for all \(x \in \lie{g}\),
@@ -428,16 +437,17 @@ noabbrev
         If there is an isomorphism between \(G\) and \(H\) we say that \(G\) and \(H\) are \defineindex{isomorphic}, and denote this \(G \isomorphic H\).
     \end{dfn}
     
-    Notice that if \(\identity_G\) and \(\identity_H\) are the identity elements of \(G\) and \(H\) respectively then we have \(\varphi(\identity_G) = \identity_H\) as well as \(\varphi(g^{-1}) = \varphi(g)^{-1}\) for all \(g \in G\).
+    Notice that if \(\identity_G\) and \(\identity_H\) are the identity elements of \(G\) and \(H\) respectively then we necessarily have \(\varphi(\identity_G) = \identity_H\) as well as \(\varphi(g^{-1}) = \varphi(g)^{-1}\) for all \(g \in G\).
     
     As mentioned before every group has a natural action on itself, that is a function \(G \times G \to G\), given by \(g \action h = gh\).
     In this way every group element, \(g\), defines a bijection \(\varphi_g \colon G \to G\) defined by \(\varphi_g(h) = gh\).
     The collection of these bijections, along with function composition, is isomorphic to the group itself, and is a subgroup of some symmetric group.
-    This is Cayley's theorem, and highlights the importance of the symmetric group.
+    This is Cayley's theorem, and highlights the importance of the symmetric group \cite[120]{dummit}.
     % TODO: Find a citation
     
-    There are often times when it makes sense to combine the structure of a group with the structure of a vector space, the ability to add elements and scale by some scalar.
+    There are often times when it makes sense to combine the structure of a group with the structure of a vector space, giving us the ability to add elements and scale them.
     This leads to the following definition.
+    This leads to a vector space with a product structure, which is an algebra.
     
     \begin{dfn}{Group Algebra}{}\index{group algebra}
         Let \(G\) be a group and \(R\) a ring.
@@ -458,8 +468,6 @@ noabbrev
         If \(R\) is a field then \(R[G]\) is an associative algebra (a vector space with an associative product), called the \defineindex{group algebra} \cite[740]{hassani}.
     \end{dfn}
     
-    Note that an algebra is just a vector space with an extra operation \(V \times V \to V\) giving the product of two vectors in a way which is compatible with vector addition and scalar multiplication.
-        
     The most common case of a group algebra is the group algebra \(\complex[G]\) for some arbitrary group, \(G\).
     Elements of this take the form \(z_i g_i\) for some \(z_i \in \complex\) and \(g_i \in G\), using the Einstein summation convention.
     
@@ -480,13 +488,13 @@ noabbrev
     
     \begin{dfn}{Representation}{}
         Let \(G\) be a group.
-        A \defineindex{group representation}, \((\rho, V)\), is a pair consisting of a vector space, \(V\), called the representation space, and a homomorphism \(\rho \colon G \to \generalLinear(V)\) \cite[726]{hassani}.
+        A \defineindex{group representation}, \((\rho, V)\), is a pair consisting of a vector space, \(V\), called the \defineindex{representation space}, and a homomorphism \(\rho \colon G \to \generalLinear(V)\) \cite[726]{hassani}.
     \end{dfn}
     
     It is common to refer to both \(\rho\), \(V\), alone, as well as the pair \((\rho, V)\) as the representation.
     While we can take representations over arbitrary fields we will restrict ourselves to representations over \(\complex\), since these have the most applications in physics.
     
-    The simplest example of a representation is the \defineindex{trivial representation}, \((\rho_{\text{trivial}}, V)\), which acts trivially on \(V\), that is \(\rho_{\text{trivial}}(g) = \identityMatrix\), or equivalently, \(g \action v = v\) for all \(g \in G\).
+    The simplest representation is the \defineindex{trivial representation}, \((\rho_{\text{trivial}}, V)\), which acts trivially on \(V\), that is \(\rho_{\text{trivial}}(g) = \identityMatrix\), or equivalently, \(g \action v = v\) for all \(g \in G\).
     
     \begin{exm}{Permutation Representation}{}
         Consider the symmetric group on three elements, \(\symmetricGroup[3]\).
@@ -513,7 +521,7 @@ noabbrev
             .
         \end{equation*}
         This representation acts by permuting the basis vectors \(\ve{1} = (1, 0, 0)^\trans\), \(\ve{2} = (0, 1, 0)^\trans\), and \(\ve{3} = (0, 0, 1)^\trans\), for example \(\rho\cycle{1,2} \mkern1mu \ve{1} = \ve{2}\), so we call this the \defineindex{permutation representation}.
-        The representation of any other group element can be found by writing the element as a product of \define{transpositions}\index{transposition} (two element cycles).
+        The representation of any other group element can be found by writing the element as a product of transpositions.
         For example, \(\cycle{1,2,3} = \cycle{1,2}\cycle{2,3}\) and so
         \begin{multline}
             \rho\cycle{1,2,3} = \rho(\cycle{1,2} \cycle{2,3}) = \rho\cycle{1,2} \, \rho\cycle{2,3}\\
@@ -539,7 +547,7 @@ noabbrev
     \end{exm}
     
     \begin{exm}{Fundamental and Adjoint Representations}{}
-        Given a Lie group, \(G\), there are two representations we are generally interested in.
+        Given a Lie group, \(G\), there are two representations we are generally interested in \cite[42]{allanach}.
         The first is the \defineindex{fundamental}\index{fundamental representation}, or defining, representation.
         This is the representation used to define the group.
         For example, given a matrix Lie group of \(N \times N\) matrices over \(\field\) the fundamental representation is \(\field^N\) and the group acts on this space by matrix multiplication.
@@ -552,58 +560,72 @@ noabbrev
         For example, in the case of \(\specialUnitary(N)\) there are \(N^2 - 1\) \(N \times N\) traceless Hermitian matrices, so the adjoint representation has dimension \(N^2 - 1\).
         
         These representations are important in quantum field theory, since the representation a particle transforms under tells us a lot about the properties of that particle.
-        In particular, for \(\specialUnitary(3)\) the fundamental representation is 3 dimensional, corresponding to the 3 colours, and the adjoint representation is 8 dimensional, corresponding to the 8 gluons.
+        In particular, for \(\specialUnitary(3)\) the fundamental representation is 3 dimensional, corresponding to the 3 colours, and the adjoint representation is 8 dimensional, corresponding to the 8 gluons \cite[547]{peskin}.
     \end{exm}
     
     There are an infinite number of representations of any group, however, they are not all equally interesting.
-    This is evident since given some representation, \((\rho, V)\), we can form a new representation \((\rho', W)\), where \(V\) is a subspace of \(W\), by defining \(\rho' = \rho \oplus \identityMatrix_{V^\perp}\) where \(V^{\perp}\) is the space such that \(W = V \oplus V^{\perp}\), so \(\rho'(g)\) acts as \(\rho(g)\) on the subspace \(V\) and acts trivially on the orthogonal subspace \(V^{\perp}\).
+    This is evident since given some representation, \((\rho, V)\), we can form a new representation \((\rho', W)\), where \(V\) is a subspace of \(W\), by defining\footnote{for details about direct sums see \cref{sec:direct sums}} \(\rho' = \rho \oplus \identityMatrix_{V^\perp}\) where \(V^{\perp}\) is the orthogonal subspace to \(V\) defined such that \(W = V \oplus V^{\perp}\)
+    Then \(\rho'(g)\) acts as \(\rho(g)\) on the subspace \(V\) and acts trivially on the orthogonal subspace \(V^{\perp}\).
     Clearly this representation doesn't really give us any new information.
-    More generally, given two representations, \((\rho_1, V_1)\) and \((\rho_2, V_2)\), we can form a representation \((\rho_1 \oplus \rho_2, V_1 \oplus V_2)\), again, we don't get any new information out of this new representation.
+    More generally, given two representations, \((\rho_1, V_1)\) and \((\rho_2, V_2)\), we can form a representation \((\rho_1 \oplus \rho_2, V_1 \oplus V_2)\).
+    Concretely, if we have finite dimensional representations, we can identify \((\rho_1 \oplus \rho_2)(g)\) with a block diagonal matrix
+    \begin{equation}
+        (\rho_1 \oplus \rho_2)(g)(v_1 \oplus v_2) = 
+        \begin{pmatrix}
+            \rho_1(g) & 0\\
+            0 & \rho_2(g)
+        \end{pmatrix}
+        \begin{pmatrix}
+            v_1\\ v_2
+        \end{pmatrix}
+    \end{equation}
+    for \(v_1 \oplus v_2 \in V_1 \oplus V_2\).
+    From this we can see that the two representations act independently, and so we don't gain any information.
     For this reason we define irreducible representations, which are exactly the representations which aren't of this form.
     
     \begin{dfn}{Irreducible Representation}{}
         Let \(G\) be a group and \((\rho, V)\) a representation of \(G\).
-        We say that \((\rho, V)\) is an \defineindex{irreducible representation}, or irrep, if \(V\) has no \(G\)-invariant subspaces \cite{hamermesh}.
+        We say that \((\rho, V)\) is an \defineindex{irreducible representation}, or irrep, if \(V\) has no \(G\)-invariant subspaces \cite[95]{hamermesh}.
         That is, there is no \(W \subset V\) such that \(g \action w \in W\) for all \(w \in W\).
     \end{dfn}
 
     \begin{dfn}{Decomposable Representation}{}
         Let \(G\) be a group and \((\rho, V)\) a representation of \(G\).
-        We say that \((\rho, V)\) is a \defineindex{decomposable representation} if \(\{\rho(g)\}\) can be simultaneously block diagonalised \cite{hamermesh}.
+        We say that \((\rho, V)\) is a \defineindex{decomposable representation} if \(\{\rho(g)\}\) can be simultaneously block diagonalised \cite[97]{hamermesh}.
         In other words, there exist representations \((\rho_i, V_i)\) such that \(\rho = \bigoplus_i \rho_i\) and \(V = \bigoplus_i V_i\).
     \end{dfn}
     
-    For a finite group, \(G\), and a representation space over \(\reals\) or \(\complex\) all indecomposable representations are irreducible \cite{hamermesh}.
+    For a finite group, \(G\), and a representation space over \(\reals\) or \(\complex\) all indecomposable representations are irreducible \cite[98]{hamermesh}.
     This also the case if \(G\) is compact.
     We will assume that all indecomposable are irreducible and vice versa.
     
     Representations give us the final piece of machinery required to make \enquote{a tensor is something which transforms like a tensor} precise.
-    A tensor is something which transforms under some representation of 
+    A tensor is something which transforms under some representation of a group of transformations in a given way.
     \begin{dfn}{Tensor}{def:tensor}
         Let \(G\) be a group and \(V\) a vector space over a field \(\field\).
-        Denote by \(\dual{V}\) the dual space to \(V\), that is the space of all linear maps \(V \to \field\).
+        Denote by \(\dual{V}\) the dual space\footnote{See \cref{sec:vector spaces} for details.} to \(V\).
         Fix some representation \(\rho \colon G \to \generalLinear(V)\).
-        A \defineindex{tensor}, \(T \in V^{\otimes p} \otimes \dual{V}^{\otimes q}\), is an object with components \(\tensor{T}{^{a_1\dotso a_q}_{b_1 \dotso b_p}}\), which transform under the action of \(g \in G\) such that \(T' = g \action T = \rho(g)T\) has components
+        A \defineindex{tensor}\footnote{See \cref{sec:tensor products} for details of tensor products, and note that \(V^{\otimes p}\) is short for \(V \otimes \dotsb \otimes V\) with \(p\) copies of \(V\).}, \(T \in V^{\otimes p} \otimes \dual{V}^{\otimes q}\), is an object with components \(\tensor{T}{^{a_1\dotso a_q}_{b_1 \dotso b_p}}\), which transform under the action of \(g \in G\) such that \(T' = g \action T = \rho(g)T\) has components
         \begin{equation*}
             \tensor{{T'}}{^{a_1\dotso a_q}_{b_1 \dotso b_p}} = \tensor{\rho(g)}{^{a_1}_{c_1}} \dotsm \tensor{\rho(g)}{^{a_q}_{c_q}} \tensor{\rho(g)}{_{b_1}^{d_q}} \dotsm \tensor{\rho(g)}{_{b_p}^{d_p}} \tensor{T}{^{c_1\dotso c_q}_{d_1 \dotso d_p}}
         \end{equation*}
         where we employ the Einstein summation convention and sum over repeated indices from \(1\) to \(\dim V\) \cite[18]{cvitanovic}.
     \end{dfn}
     
-    We will follow the common physics abuse of terminology and refer to the components \(\tensor{T}{^{a_1\dotso a_q}_{b_1\dotso b_p}}\) as being the tensor see \cref{sec:technicalities tensor defs}.
+    We will follow the common physics abuse of terminology and refer to the components \(\tensor{T}{^{a_1\dotso a_q}_{b_1\dotso b_p}}\) as being the tensor see \cref{sec:technicalities tensor defs} for a discussion on the slight differences in terminology between different fields.
     
     Note that what we have defined above may be more specifically called a \((p, q)\)-tensor.
     A \((p, 0)\)-tensor is also commonly referred to as a rank \(p\) contravariant tensor, or simply a rank \(p\) tensor, and a \((0, q)\)-tensor may be referred to as a rank \(q\) covariant tensor.
     
-    If a tensor transforms under no copies of \(G\), that is it carries no indices, then we say it is a \defineindex{scalar}.
+    If a tensor transforms under no copies of \(G\), that is it carries no indices and is invariant, then we say it is a \defineindex{scalar}.
     If a tensor transforms under a single copy of \(G\), that is it carries a single index, then we say it is a \defineindex{vector}.
-    Note that these definitions are technically incompatible with the mathematicians definitions, where scalars are elements of \(\field\) and vectors are elements of a vector space, including spaces like \(\field\) and \(V \otimes V\), whereas physicists would call \(T \in V \otimes V\) a rank 2 tensor and not a vector.
+    These definitions are incompatible with the mathematicians definitions, where scalars are elements of \(\field\) and vectors are elements of a vector space, including spaces like \(V \otimes V\) and \(\field\), whereas physicists would call \(T \in V \otimes V\) a rank 2 tensor and not a vector and would certainly never refer to a scalar as a vector.
     
     \begin{exm}{}{}
-        In classical mechanics we consider Cartesian tensors, which transform under the rotation group \(\specialOrthogonal(3)\).
+        In classical mechanics we consider Cartesian tensors, which transform under the rotation group \(\specialOrthogonal(3)\) \cite[188]{goldstein}.
         For example, if \(R \in \specialOrthogonal(3)\) is a rotation matrix then \(\vv{x} \in \reals^3\) is a vector if it has components transforming according to
         \begin{equation}
-            x_i = R_{ij}x_j.
+            x'_i = R_{ij}x_j.
         \end{equation}
         The moment of inertia tensor, \(I\), has components \(I_{ij}\) and transforms as
         \begin{equation}
@@ -611,10 +633,10 @@ noabbrev
         \end{equation}
         so it is a rank 2 tensor.
         
-        In relativity we consider Lorentz tensors, which transform under the Lorentz group \(\lorentzGroup\).
+        In relativity we consider Lorentz tensors, which transform under the Lorentz group \(\lorentzGroup\) \cite[36]{weinberg}.
         For example, if \(\Lambda \in \lorentzGroup\) is a Lorentz transformation then \(x \in \minkowskiSpace\) is a vector if it has components transforming according to
         \begin{equation}
-            x^\mu = \tensor{\Lambda}{^\mu_\nu}x^\nu.
+            x'^\mu = \tensor{\Lambda}{^\mu_\nu}x^\nu.
         \end{equation}
         The energy-momentum tensor, \(T\), has components \(T^{\mu\nu}\) which transform as
         \begin{equation}
@@ -623,7 +645,7 @@ noabbrev
         so it is a rank 2 contravariant tensor.
     \end{exm}
     
-    Given two tensors, \(R \in V^{\otimes q} \otimes \dual{V}^{\otimes p}\) and \(T \in V^{\otimes r} \otimes \dual{V}^{\otimes s}\), we can form a new tensor \(R \otimes T \in V^{\otimes(q + r)} \otimes \dual{V}^{\otimes(p + s)}\), with components given by
+    Given two tensors, \(R \in V^{\otimes q} \otimes \dual{V}^{\otimes p}\) and \(T \in V^{\otimes r} \otimes \dual{V}^{\otimes s}\), we can form a new tensor \(R \otimes T \in V^{\otimes(q + r)} \otimes \dual{V}^{\otimes(p + s)}\), with components given by \cite[37]{weinberg}
     \begin{equation}
         \tensor{(R \otimes T)}{^{a_1\dotso a_q b_1 \dotso b_r}_{c_1 \dotso c_p d_1 \dotso d_s}} = \tensor{R}{^{a_1\dotso a_q}_{c_1 \dotso c_p}} \tensor{T}{^{b_1 \dotso b_r}_{d_1 \dotso d_s}}.
     \end{equation}
@@ -637,10 +659,12 @@ noabbrev
     Anyone who's worked with tensors extensively will have at some point in their calculations run out of appropriate letters to use as indices, and accidentally reusing a letter can make an entire expression completely meaningless.
     For this reason we now introduce a notation known as \defineindex{birdtracks} for expressing the components of tensors.
     
-    Birdtracks are inspired by Feynman diagrams, and indeed sometimes arise explicitly as Feynman diagrams, and indeed many Feynman diagrams can be directly interpreted as birdtracks.
-    This notation was first developed by Roger Penrose % TODO: citation
-    who originally designed the notation for use in general relativity.
-    The general idea is to represent a tensor as a vertex in a graph, with the edges of the graph, which we call wires, being the indices of the tensor.
+    Birdtracks are inspired by Feynman diagrams.
+    Indeed many Feynman diagrams can be directly interpreted as birdtracks.
+    This notation was first developed by Roger Penrose \cites{penrose}[240]{penrose-road-to-reality} who originally designed the notation for use in general relativity.
+    We will follow the conventions set out in \cite{cvitanovic}.
+    
+    The general idea is to represent a tensor as a vertex in a graph, with the edges of the graph, which we shall call wires or legs, being the indices of the tensor.
     Two vertices are joined by an edge if that index is contracted over.
     We distinguish contravariant and covariant indices where required with arrows on the line, pointing away from the vertex for a contravariant index and towards it for a covariant index.
     Allowing only one arrow on each line ensures that we can only contract a contravariant index with a covariant index.
@@ -678,7 +702,7 @@ noabbrev
         .
     \end{equation}
     In the language of Feynman diagrams we may refer to this as a propagator.
-    Indeed, many propagators, such as those of a particle with colour charge, carry a factor of \(\tensor{\delta}{^a_b}\), acting as the identity on colour space, so the colour of the particle doesn't change as it propagates.
+    Indeed, many propagators, such as those of a particle with colour charge, carry a factor of \(\tensor{\delta}{^a_b}\), acting as the identity on colour space, so the colour of the particle doesn't change as it propagates \cite[802]{peskin}.
     
     To contract tensors we join up the contracted indices.
     For example, we can write \(\tensor{T}{^{abc}_{de}}\tensor{R}{^{d}_{afc}}\) as
@@ -703,7 +727,7 @@ noabbrev
         \end{tikzpicture}
         .
     \end{equation}
-    Again, the indices are labelled for comparison to the index notation.
+    Again, the indices are labelled only to allow comparison to the index notation.
     
     It is possible to contract indices on the same tensor, this is drawn as a loop.
     For example, given a rank 2 tensor \(M\) its trace is
@@ -717,7 +741,7 @@ noabbrev
         \end{tikzpicture}
         .
     \end{equation}
-    A particularly common example of this is the trace of the Kronecker delta, \(\tensor{\delta}{^a_a} = n\), where \(n\) is the dimension of the vector space \(V\), recalling that \(\delta \in V \otimes \dual{V}\).
+    A particularly common example of this is the trace of the Kronecker delta, \(\tensor{\delta}{^a_a} = n\), where \(n\) is the dimension of the vector space \(V\) on which the Kronecker delta acts.
     This is then drawn as
     \begin{equation}
         \tensor{\delta}{^a_a} = 
@@ -756,7 +780,7 @@ noabbrev
     This means we are free to move these tensors around in the diagram, as well as the manipulation of the wires which we have been doing so far.
     
     We can express symmetries of a tensor in this notation by crossing wires to denote swapping the indices.
-    For example, if \(S^{ab}\) is a symmetric tensor then we have
+    For example, if \(S^{ab}\) is a symmetric tensor, \(S^{ab} = S^{ba}\), then we have
     \begin{equation}
         S^{ab} = 
         \tikzsetnextfilename{birdtracks-symmetric-tensor-1}
@@ -778,12 +802,12 @@ noabbrev
     We can think of the symmetry of a tensor as the action of the symmetric group on its indices.
     In general given \(V^{\otimes p} \otimes \dual{V}^{\otimes q}\), there is a natural action of \(\symmetricGroup[p] \otimes \symmetricGroup[q]\) on this space, \(\symmetricGroup[p]\) acts to permute the copies of \(V\) and \(\symmetricGroup[q]\) acts to permute the copies of \(\dual{V}\).
     In terms of the components this corresponds to permuting upper indices and permuting lower indices.
-    For example, that \(S^{ab}\) is symmetric means that \(S^{ab}\) is invariant under the action of \(\cycle{1,2} \in \symmetricGroup[2]\).
+    For example, symmetry of \(S^{ab}\) means that \(S^{ab}\) is invariant under the action of \(\cycle{1,2} \in \symmetricGroup[2]\).
     In general, a totally symmetric tensor, \(S^{a_1\dotso a_p}\), is invariant under the action of any permutation in \(\symmetricGroup[p]\).
     Likewise, a totally antisymmetric tensor, \(A^{a_1\dotso a_p}\), is invariant under any even permutation in \(\symmetricGroup[p]\) and picks up a factor of \(-1\) under any odd permutation in \(\symmetricGroup[p]\).
     
     \subsection{Birdtracks for the Symmetric Group}
-    This identification of symmetries with permutations allows us to extend this notation to a notation for the symmetric group.
+    This identification of symmetries with permutations allows us to extend birdtracks to a notation for the symmetric group.
     We don't write any arrows, since these only tell us whether and index is contravariant or covariant, which depends on what tensor we are acting on.
     A permutation in \(\symmetricGroup\) can then be pictured as a collection of wires tracking \(n\) elements swapping around \cite[49]{cvitanovic}.
     For example, the permutation \(\cycle{1,2,4} \in \symmetricGroup[5]\) can be drawn, including labels normally left implicit, as
@@ -847,7 +871,7 @@ noabbrev
         \ .
     \end{equation}
     We can then simplify the diagram by assuming that the wires can pass through each other and rearrange them until the diagram is more readable.
-    More formally two diagrams represent the same permutation if they are equivalent up to a four-dimensional spatial isotopy, the fourth dimension allowing us to pass the wires around each other, when in three dimensions they would collide.
+    More formally, two diagrams represent the same permutation if they are equivalent up to a four-dimensional spatial isotopy, the fourth dimension allowing us to pass the wires around each other, when in three dimensions they would collide \cite[44]{heunen}.
     This results in the following diagram:
     \begin{equation}
         \tikzsetnextfilename{math-prelims-example-diagram-simplified-composition}
@@ -866,7 +890,7 @@ noabbrev
     \end{equation}
     
     A common operation on tensors is to symmetrise or antisymmetrise over a certain set of indices \cite[50--51]{cvitanovic}.
-    Denoting by \(S_{i_1\dotso i_k}\) the symmetriser over the indices \(i_1, \dotsc, i_k\) this symmetriser is given by
+    The symmetriser over the indices \(i_1, \dotsc, i_k\) this symmetriser is given by
     \begin{equation}
         S_{i_1 \dotso i_k} \coloneqq \frac{1}{k!} \sum_{\sigma \in \symmetricGroup[k]} \sigma,
     \end{equation}
@@ -876,14 +900,18 @@ noabbrev
     \begin{equation}
         A_{i_1 \dotso i_k} \coloneqq \frac{1}{k!} \sum_{\sigma \in \symmetricGroup[k]} \sgn(\sigma) \sigma
     \end{equation}
-    where \(\sgn\) is the sign function, defined to be 1 if \(\sigma\) can be written as a product of an even number of transpositions, and \(-1\) otherwise.
+    where \(\sgn\) is the sign function, defined to be 1 if \(\sigma\) is an even permutation and \(-1\) if it is an odd permutation.
     
-    For example, \(S_{12} = (\cycle{} + \cycle{1,2})/2\) and \(A_{12} = (\cycle{} - \cycle{1,2})/2\).
-    Acting on a two index tensor, \(T^{ij}\), with these gives
+    The simplest non-trivial example of (anti)symmetrisers act on two indices,
+    \begin{equation}
+        S_{12} = \frac{1}{2}(\cycle{} + \cycle{1,2}), \qqand A_{12} = \frac{1}{2}(\cycle{} - \cycle{1,2}).
+    \end{equation}
+    The action of these on a two index tensor, say \(T^{ij}\), gives
     \begin{align}
-        S_{12} \action T^{ij} &= T^{(ij)} = \frac{1}{2}(T^{ij} + T^{ji}),\\
-        A_{12} \action T^{ij} &= T^{[ij]} = \frac{1}{2}(T^{ij} - T^{ji}).
+        S_{12} \action T^{ij} &= \frac{1}{2}(T^{ij} + T^{ji}) \eqqcolon T^{(ij)},\\
+        A_{12} \action T^{ij} &= \frac{1}{2}(T^{ij} - T^{ji}) \eqqcolon T^{[ij]}.
     \end{align}
+    The use of \(()\) and \([]\) denotes symmetrising and antisymmetrising the enclosed indices respectively \cite[238]{penrose-road-to-reality}.
     
     In the braid notation we write a symmetriser as an empty box into which the wires being symmetrised are fed, and the antisymmetriser as a filled in box, so
     \begin{align}
@@ -932,21 +960,25 @@ noabbrev
     Recall our examples of tensors with symmetries from \cref{sec:overview}.
     We saw the Kronecker delta, \(\delta^{ij}\), is completely symmetric, the Levi-Civita symbol, \(\varepsilon^{ijk}\), and field strength tensor, \(F^{\mu\nu}\), are completely antisymmetric, and the Riemann tensor, \(R_{\mu\nu\rho\sigma}\), has mixed symmetry.
     In order to discus these we need a notation to quickly define the symmetries of a given tensor.
-    These symmetries will all be of the form \enquote{some collection of indices} are symmetric (or antisymmetric) under exchange.
+    These symmetries will all be of the form [some collection of indices] are (anti)symmetric under exchange.
     
-    We could start by listing all sets of indices which are symmetrised over.
+    We could start by listing all sets of indices which are symmetric under exchange.
     For our example tensors this gives the lists
     \begin{equation}
         \delta: [[i, j]], \quad \varepsilon: [], \quad F: [], \qand R: [[\mu\nu], [\rho\sigma]],
     \end{equation}
     where we treat \(\mu\nu\) and \(\rho\sigma\) as a single index.
-    We can also list all sets of indices which are antisymmetrised over.
+    We can also list all sets of indices which are antisymmetric under exchange.
     For our example tensors this gives the lists
     \begin{equation}
         \delta: [], \quad \varepsilon: [[i, j, k]], \quad F: [[\mu, \nu]], \qand R: [[\mu, \nu], [\rho, \sigma]].
     \end{equation}
     
-    After playing around with these lists for a bit we might notice that we can write both lists at once:
+    It is not possible to be both symmetric and antisymmetric in a pair of indices.
+    We also notice that if a tensor is symmetric in its first and second indices, and symmetric in its second and third indices then it is necessarily symmetric in its first and third indices, swapping only the first and second or second and third indices we have \(T^{abc} = T^{bac} = T^{bca} = T^{cba}\).
+    This means that if sets of (anti)symmetric indices have any overlap they are equal.
+    So an index appears in at most one set of symmetric indices and one set of antisymmetric indices.
+    We can use this to write both lists at once depending on the direction in which we read them:
     \begin{equation}
         \delta: 
         \begin{bmatrix}
@@ -970,8 +1002,8 @@ noabbrev
         \end{bmatrix}
         .
     \end{equation}
-    Here we read across to see which indices are symmetrised and down to see which indices are antisymmetrised.
-    We've been trying to move away from explicitly labelling indices, so lets just take the order of the indices as it is and replace all the symbols with a blank square, \(\square\):
+    Here we read across to see which indices are symmetrised and read vertically to see which indices are antisymmetrised.
+    We've been trying to move away from explicitly labelling indices, so lets fix the order of the indices and replace all the symbols with a blank square, \(\square\):
     \begin{equation}
         \delta: 
         \begin{bmatrix}
@@ -999,7 +1031,7 @@ noabbrev
     \begin{equation}
         \delta: \ydiagram{2}\,, \quad \varepsilon:\ydiagram{1,1,1}\,, \quad F: \ydiagram{1,1}\,, \qand R: \ydiagram{2,2}\,.
     \end{equation}
-    The next section formalises this notation, which are called Young diagrams.
+    The next section formalises this notation for symmetries, known as Young diagrams.
     
     \section{What are Young Diagrams}
     \begin{dfn}{Partition}{}
@@ -1014,19 +1046,18 @@ noabbrev
     For example, \(\tuple{1,5,3}\) is a partition of 9, this is not ordered, the equivalent ordered partition is \(\tuple{5,3,1}\).
     
     \begin{dfn}{Young Diagram}{}
-        Given an ordered partition \(\tuple{\lambda_1, \dotsc, \lambda_n}\) of some \(k \in \naturals\) the \defineindex{Young diagram} is formed from a row of \(\lambda_1\) boxes above a row of \(\lambda_2\) boxes and so on down to a row of \(\lambda_n\) boxes, all aligned to the left \cite[87]{cvitanovic}.
+        Given an ordered partition \(\tuple{\lambda_1, \dotsc, \lambda_n}\) of some \(k \in \naturals\) the corresponding \defineindex{Young diagram} is formed from a row of \(\lambda_1\) boxes above a row of \(\lambda_2\) boxes and so on down to a row of \(\lambda_n\) boxes, all aligned to the left \cite[87]{cvitanovic}.
     \end{dfn}
     
-    For example, the ordered partitions of four are \(\tuple{4}\), \(\tuple{3,1}\), \(\tuple{2,2}\), \(\tuple{2,1,1}\), and \(\tuple{1,1,1,1}\).
-    The corresponding Young diagrams are
+    For example, the ordered partitions of 4 are \(\tuple{4}\), \(\tuple{3,1}\), \(\tuple{2,2}\), \(\tuple{2,1,1}\), and \(\tuple{1,1,1,1}\), giving the Young diagrams
     \ytableausetup{smalltableaux}
     \begin{equation}
         \ydiagram{4}\,, \quad \ydiagram{3,1}\,, \quad \ydiagram{2,2}\,, \quad \ydiagram{2,1,1}\,, \qand \ydiagram{1,1,1,1}\,.
     \end{equation}
     
     \begin{dfn}{Young Tableaux}{}
-        Given a Young diagram we form a \defineindex{Young tableau} by writing numbers in the boxes in such a way that the numbers are increasing from left to right along a row and strictly increasing from top to bottom down a column \cite{cvitanovic}.
-        A \(k\) box \defineindex{standard Young tableau} is a Young tableau using the numbers 1 through \(k\) exactly once.
+        Given a Young diagram we form a \defineindex{Young tableau} by writing numbers in the boxes \cite[87]{cvitanovic}.
+        A \(k\) box \defineindex{standard Young tableau} is a Young tableau using the numbers 1 through \(k\) exactly once in such a way that reading a row left to right or a column top to bottom the numbers are strictly increasing.
     \end{dfn}
     
     For example, given the Young diagram associated with the partition \(\tuple{2,1,1}\) there are three distinct standard tableaux:
@@ -1071,7 +1102,7 @@ noabbrev
             \end{ytableau}
             .
         \end{equation}
-        Labelling each box with the associated hook length gives
+        Labelling each box with its hook length gives
         \begin{equation}
             \ytableaushort{431,21}.
         \end{equation}
@@ -1081,9 +1112,15 @@ noabbrev
         \end{equation}
     \end{exm}
     
+    \subsection{The Code}
+    In the code Young diagrams are implemented as a list giving the partition, with the header \lstinline|youngDiagram|.
+    There is a method \lstinline|printYoungDiagram| for outputting Young diagrams as graphics objects.
+    Young tableaux are implemented as a ragged list with the header \lstinline|youngTableau|.
+    The \lstinline|StandardForm| output of \lstinline|youngTableau| is the graphical format.
+    
     \section{Young Projectors}
     We motivated Young diagrams as a way of labelling the symmetries of a given tensor.
-    We now ask the reverse question, given a Young diagram how can we construct a tensor with the given symmetries?
+    We now ask the reverse question, given a Young diagram how can we construct a tensor with symmetries labelled by that Young diagram?
     For example, suppose we want to construct a tensor with the symmetries labelled by
     \begin{equation}
         \ydiagram{2,1}.
@@ -1093,16 +1130,20 @@ noabbrev
     So in this example we start with \(T^{ijk}\).
     We can make a tensor which is symmetric in the first pair of indices by symmetrising:
     \begin{equation}
-        T_1^{ijk} = \frac{1}{2}(T^{ijk} + T^{jik}).
+        T_1^{ijk} = S_{12} \action T^{ijk} = T^{(ij)k} = \frac{1}{2}(T^{ijk} + T^{jik}).
     \end{equation}
     We can then make a tensor which is antisymmetric in the second pair of indices by antisymmetrising:
-    \begin{equation}
-        T_2^{ijk} = \frac{1}{2}(T_1^{ijk} - T_1^{ikj}) = \frac{1}{4}(T^{ijk} + T^{jik} - T^{ikj} - T^{jik}).
-    \end{equation}
+    \begin{align}
+        T_2^{ijk} &= A_{23} \action T_1^{ijk} = T_1^{i[jk]} \\
+        &= \frac{1}{2}(T_1^{ijk} - T_1^{ikj}) = \frac{1}{4}(T^{ijk} + T^{jik} - T^{ikj} - T^{jik}). \notag
+    \end{align}
     We can then write this as some linear combination of permutations in \(\complex[\symmetricGroup[3]]\) acting on \(T^{ijk}\):
     \begin{equation}
         T_2^{ijk} = \frac{1}{4}[\cycle{} + \cycle{1,2} - \cycle{2,3} - \cycle{1,3,2}] \action T^{ijk}.
     \end{equation}
+
+    This process takes some tensor, \(T \in V^{\otimes 3}\), and projects it onto a subspace of tensors symmetric in the first two indices.
+    We then further project onto the subspace of tensors antisymmetric in the second two indices.
     Generalising this procedure leads to the following definition.
     
     
@@ -1119,6 +1160,10 @@ noabbrev
             Here \(\hooknumber{Y}\) is the hook number of the diagram, \(\abs{S_i}\) is the length of the \(i\)th row and \(\abs{A_j}\) is the length of the \(j\)th column.
         \end{enumerate}
     \end{dfn}
+    
+    Young projectors are constructed in such such a way that by the usual action of the symmetric group the Young projectors on diagrams of \(k = p + q\) form a complete set of orthogonal projection operators on \(V^{\otimes p} \otimes \dual{V}^{\otimes q}\) \cite[92]{cvitanovic}.
+    Being projection operators means that \(\projector{Y} \projector{Y} = \projector{Y}\), being orthogonal means \(\projector{Y} \projector{Z} = 0\) if \(Y \ne Z\),and completeness means \(\sum_Y \projector{Y} = \cycle{} = \identity\), where the sum is over all standard tableaux with \(k\) boxes.
+    The orthogonality follows immediately from the fact that if we connect a symmetriser to an antisymmetriser with two or more wires then the result must vanish, since this is the product of a symmetric and antisymmetric term.
     
     It is also possible to construct projectors from Young tableaux.
     To do so first identify the permutation, \(\sigma\), which turns the ordered Young tableau into the Young tableau that we have, then construct the Young projector for the Young diagram of this shape.
@@ -1139,11 +1184,11 @@ noabbrev
         
         The normalisation factor is
         \begin{align}
-            \alpha_Y &= \frac{1}{24} (3!2!)(2!2!1!) = 6.
+            \alpha_Y &= \frac{1}{24} (3!2!)(2!2!1!) = 2.
         \end{align}
         The Young projector is then
         \begin{equation}
-            \projector{Y} = 6
+            \projector{Y} = 2
             \tikzsetnextfilename{young-projector-example}
             \begin{tikzpicture}[baseline=(A)]
                 \node (A) at (0, 0.9) {};
@@ -1165,11 +1210,7 @@ noabbrev
             \end{tikzpicture}
         \end{equation}
     \end{exm}
-    
-    Young projectors are constructed in such such a way that by the usual action of the symmetric group the Young projectors on diagrams of \(k = p + q\) form a complete set of orthogonal projection operators on \(V^{\otimes p} \otimes \dual{V}^{\otimes q}\) \cite[92]{cvitanovic}.
-    Being projection operators means that \(\projector{Y} \projector{Y} = \projector{Y}\), being orthogonal means \(\projector{Y} \projector{Z} = 0\) if \(Y \ne Z\),and completeness means \(\sum_Y \projector{Y} = \cycle{} = \identity\), where the sum is over all standard tableaux with \(k\) boxes.
-    The orthogonality follows immediately from the fact that if we connect a symmetriser to an antisymmetriser with two or more wires then the result must vanish, since this is the product of a symmetric and antisymmetric term.
-    
+        
     \section{Hermitian Young Projectors}
     For Young diagrams with three or more boxes the associated Young projectors are not, in general, Hermitian.
     Hermiticity is often a desirable property.
@@ -1178,23 +1219,24 @@ noabbrev
     \begin{dfn}{Hermitian Young Projectors}{}
         Denote by \(\projector{Y}\) the Young projector associated with the Young diagram \(Y\).
         Let \(Y'\) be the Young diagram we get by removing the last box on the last row.
-        Construct the following
+        Then the \define{Hermitian Young projectors}\index{Hermitian Young projector} are given by
         \begin{equation}
             \hermitianprojector{Y} \coloneqq
             \begin{cases}
                 \projector{Y} & \text{if } Y \text{ has 2 or fewer boxes},\\
-                (\hermitianprojector{Y'} \otimes 1) \projector{Y} (\hermitianprojector{Y'} \otimes 1) & \text{if } Y \text{ has 3 or more boxes}.
+                (\hermitianprojector{Y'} \otimes \identityMatrix) \projector{Y} (\hermitianprojector{Y'} \otimes \identityMatrix) & \text{if } Y \text{ has 3 or more boxes}.
             \end{cases}
         \end{equation}
     \end{dfn}
     
-    That \(\symbfup{H}_{Y}\) are Hermitian is proven in \cite{keppeler-hermitian-young-projectors}.
+    Hermiticity of \(\symbfup{H}_{Y}\) is proven in \cite{keppeler-hermitian-young-projectors}.
+    As is orthogonality, \(\hermitianprojector{Y}\hermitianprojector{W} = \delta_{YW}\hermitianprojector{Y}\), completeness, \(\sum_{Y} \hermitianprojector{Y} = \identityMatrix\), and the nice property that \(\tr(\hermitianprojector{Y}) = \tr(\projector{Y})\), which is useful as we will see in \cref{sec:computing 3js and 6js} that traces of Young projectors play a big role in computing scalar quantities in \(\specialUnitary(N)\).
     
     The construction of \(\symbfup{H}_{Y}\) is clearer in the diagrammatic notation, where the recursive definition is
     \begin{equation}
         \tikzsetnextfilename{hermitian-young-projector}
         \begin{tikzpicture}[baseline=(equal.base), font=\scriptsize]
-            \draw (0, -0.25) rectangle (1, 1.75) node [midway] (Ptheta) {\(P_{\Theta}\)};
+            \draw (0, -0.25) rectangle (1, 1.75) node [midway] (Ptheta) {\(\hermitianprojector{Y}\)};
             \draw[wire] (-0.5, 0) -- (0, 0);
             \draw[wire] (-0.5, 0.5) -- (0, 0.5);
             \draw[wire] (-0.5, 1.5) -- (0, 1.5);
@@ -1204,7 +1246,7 @@ noabbrev
             \draw[wire] (1, 1.5) -- (1.5, 1.5);
             \node at (1.25, 1) {\(\vdots\)};
             \node[right=of Ptheta] (equal) {\(=\)};
-            \draw (3, 0.25) rectangle (4, 1.75) node [midway] {\(P_{\Theta'}\)};
+            \draw (3, 0.25) rectangle (4, 1.75) node [midway] {\(\hermitianprojector{Y'}\)};
             \draw[wire] (2.5, 0) -- (4.5, 0);
             \draw[wire] (2.5, 0.5) -- (3, 0.5);
             \draw[wire] (2.5, 1.5) -- (3, 1.5);
@@ -1212,12 +1254,12 @@ noabbrev
             \draw[wire] (4, 0.5) -- (4.5, 0.5);
             \draw[wire] (4, 1.5) -- (4.5, 1.5);
             \node at (4.25, 1) {\(\vdots\)};
-            \draw (4.5, -0.25) rectangle (5.5, 1.75) node [midway] {\(Y_{\Theta}\)};
+            \draw (4.5, -0.25) rectangle (5.5, 1.75) node [midway] {\(\projector{Y}\)};
             \draw[wire] (5.5, 0) -- (7.5, 0);
             \draw[wire] (5.5, 0.5) -- (6, 0.5);
             \draw[wire] (5.5, 1.5) -- (6, 1.5);
             \node at (5.75, 1) {\(\vdots\)};
-            \draw (6, 0.25) rectangle (7, 1.75) node [midway] {\(P_{\Theta'}\)};
+            \draw (6, 0.25) rectangle (7, 1.75) node [midway] {\(\hermitianprojector{Y'}\)};
             \draw[wire] (7, 0.5) -- (7.5, 0.5);
             \draw[wire] (7, 1.5) -- (7.5, 1.5);
             \node at (7.25, 1) {\(\vdots\)};
@@ -1225,25 +1267,31 @@ noabbrev
         .
     \end{equation}
     Hermiticity in the diagrammatic notation corresponds to a vertical mirror symmetry, which is clearly present here.
-    This, combined with the fact that two box Young diagrams correspond to either a single symmetriser or single antisymmetriser, which has vertical mirror symmetry, should be enough to demonstrate Hermiticity.
+    This, combined with the fact that two box Young diagrams correspond to either a single symmetriser or single antisymmetriser, which have vertical mirror symmetry, should be enough to demonstrate Hermiticity.
     
-    % TODO: Example of Hermitian Young projector construction
+    \subsection{The Code}
+    In the code Young projectors can be computed in a given representation of the symmetric group with the function \lstinline|youngProjector|.
+    This takes two Young tableaux as input, the first is the tableaux labelling the projector, and the second labels the representation.
+    See \cref{sec:irreps of Sn labelled by Young diagrams} for representation theory details.
+    Similarly Hermitian projectors can be computed recursively by \lstinline|hermitianYoungProjector|.
     
     \section{Garnir Relations}
     \subsection{Motivation}
-    The standard Young tableaux of a given shape, or rather the associated Young projectors, form a basis for the Young projectors formed from Young tableaux of that shape.
+    Fix some Young diagram, \(Y\).
+    The Young projectors given by Young tableaux of shape \(Y\) form a vector space.
+    A basis for this space is given by the Young projectors generated from standard Young tableaux of shape \(Y\) \cite[70]{sagan}.
     This is useful since it restricts the number of projectors which we need to compute, allowing for more efficient computations.
     
-    The \defineindex{Garnir relations} give us a way of taking a projector corresponding to a nonstandard Young tableau and writing it as a sum of projectors corresponding to standard Young tableaux of the same shape.
+    The \defineindex{Garnir relations} give us a way of taking a projector corresponding to a non-standard Young tableau and writing it as a sum of projectors corresponding to standard Young tableaux of the same shape.
     While the relations are on the level of the Young projectors, which are elements of the group algebra, \(\complex[\symmetricGroup]\), they are applied on the level of the Young tableaux.
-    So just keep in mind that whenever we write a sum of two Young tableaux the sum is actually happening one layer down in the group algebra.
+    So keep in mind that whenever we write a sum of two Young tableaux the sum is actually happening one layer down in the group algebra.
     
-    The Garnir relations work by taking a symmetriser, which on the level of Young tableaux is just a row of boxes.
-    We then apply this to the Young tableau, and there are only so many ways that this can be done without getting zero, since we cannot connect multiple any antisymmetriser to this symmetriser by more than one wire for a non-zero result.
-    We choose this symmetriser such that it involves symmetrising over indices which the projector antisymmetrises, and so the result is zero overall.
-    This allows us to write a Young tableau as a sum of Young tableau which are closer to being standard Young tableau, in the sense that the position in the Young tableau at which it first fails to be standard moves right is found further right or further down in all of the other Young tableaux in the sum.
+    The Garnir relations work by taking a symmetriser, which on the level of Young tableaux is just a row of boxes, and applying this to the Young tableau.
+    There are only so many ways that this can be done without getting zero, since we cannot connect multiple wire between a symmetriser and antisymmetriser without the result vanishing.
+    We apply this symmetriser in such a way that we symmetrise over indices which the projector antisymmetrises, and so the result is zero overall \cite[27]{james}.
+    This allows us to write a Young tableau as a sum of Young tableaux which are closer to being standard Young tableaux, in the sense that the positions in the Young tableaux at which they first fails to be standard is found further right or further down in all of the other Young tableaux in the sum.
     We can then rearrange this sum to find our initial Young tableau in terms of these closer-to-standard tableaux.
-    If any non-standard tableau remains in this sum simply apply the Garnir relations to this tableau until there are no non-standard tableaux.
+    If any non-standard tableaux remain in this sum simply apply the Garnir relations to these tableaux until there are no non-standard tableaux.
     Since the tableaux are all of finite extent this process must eventually terminate.
     
     \subsection{Applying the Garnir Relations}
@@ -1255,7 +1303,8 @@ noabbrev
     \end{equation}
     Since a Young projector involves symmetrising over a row the order of the numbers in a row is not important, so we can always sort them in increasing order.
     The numbers in each row are already sorted in increasing order here, but if they weren't then doing so would be the first step.
-    The next step to applying the Garnir relations is to identify the first space, from top left going left to right top to bottom, where the tableau fails to be standard.
+    The next step to applying the Garnir relations is to identify the first position, starting in the top left and going left to right, top to bottom, where the tableau fails to be standard.
+    That is, the first square with a value less than the value of the square below.
     In our example this is the 8 which is above a 7.
     We then highlight from this point to the point directly below it:
     \begin{equation}
@@ -1268,6 +1317,7 @@ noabbrev
     \end{equation}
     This gives us a strip of values, \(\tuple{8,10,4,7}\).
     However, we want to think of this strip not by the numbers in the boxes but the numbers of the boxes when labelled \(1\) to \(k\):
+    \begingroup\setlength\abovedisplayskip{0pt}
     \begin{equation}
         \begin{ytableau}
             1 & 2 & 3 & 4\\
@@ -1277,11 +1327,12 @@ noabbrev
         \end{ytableau}
         .
     \end{equation}
-    So the boxes highlighted above are \(6\), \(7\), \(8\), and \(9\).
+    \endgroup
+    So,  the boxes highlighted above are \(6\), \(7\), \(8\), and \(9\).
     
     The next step is to perform all permutations of this strip which give distinct Young projectors.
     Since we can always swap boxes in a row we simply look for all permutations of this strip which don't involve exchanging values within a row.
-    In this case these swaps are
+    In this case these permutations are
     \begin{equation}
         \cycle{6,8}, \quad \cycle{6,9}, \quad \cycle{7,8}, \quad \cycle{7,9}, \qand \cycle{6,8}\cycle{7,9}.
     \end{equation}
@@ -1339,12 +1390,12 @@ noabbrev
         \item If any of the tableau in this sum are non-standard recursively apply the Garnir relations.
         When no non-standard tableau remain stop.
     \end{enumerate}
-    Another example, where the Garnir relations are applied recursively, is in \cref{app:garnir example}
+    Another example, where the Garnir relations are applied recursively, is given in \cref{app:garnir example}
     
-    \chapter{Irreducible Representations of The Symmetric Group}
-    \section{Irreducible Representations of \texorpdfstring{\(\symmetricGroup\)}{Sn} are Labelled by Young Diagrams}
-    Given a group, \(G\), we can define an equivalence relation, \(\sim\), where \(g \sim g'\) if and only if there exists some \(h \in G\) such that \(g = hg'h^{-1}\).
-    If this is the case we say that \(g\) and \(g'\) are conjugates.
+    \chapter{Irreps of The Symmetric Group}
+    \section{Irreducible Representations of \texorpdfstring{\(\symmetricGroup\)}{Sn} are Labelled by Young Diagrams}\label{sec:irreps of Sn labelled by Young diagrams}
+    Given a group, \(G\), we can define an equivalence relation\footnote{see \cref{sec:equivalence relations}}, \(\sim\), where \(g \sim g'\) if and only if there exists some \(h \in G\) such that \(g = hg'h^{-1}\).
+    If this is the case we say that \(g\) and \(g'\) are conjugate.
     We can then take the equivalence classes, in this context called \defineindex{conjugacy classes}, and these partition \(G\).
     
     Consider the particular case when \(G = \symmetricGroup\) is the symmetric group.
@@ -1359,7 +1410,11 @@ noabbrev
     Fix some representation, \(\rho \colon G \to \generalLinear(V)\), for a finite dimensional vector space \(V\) over a field \(\field\).
     The \defineindex{character} of \(\rho\) is the map \(\chi_\rho\colon G \to \field\) given by \(\chi_\rho(g) = \tr(\rho(g))\).
     It is a basic result of character theory that given a conjugacy class, \([g]\), all elements of this conjugacy class have the same character, \(\chi_\rho(g)\), in a fixed representation. % TODO: Citation for this "basic result"
-    This follows directly from the cyclic property of the trace and the fact that \(\rho\) is a group homomorphism.
+    This follows directly from the cyclic property of the trace and the fact that \(\rho\) is a group homomorphism, so if we have \(g, g' \in [g]\), that is \(g = hg'h^{-1}\) for some \(h \in G\), then
+    \begin{multline}
+        \chi_\rho(g) = \tr(\rho(g)) = \tr(\rho(hg'h^{-1})) = \tr(\rho(h)\rho(g')\rho(h)^{-1})\\
+        = \tr(\rho(g')\rho(h)^{-1}\rho(h)) = \tr(\rho(g')) = \chi_\rho(g').
+    \end{multline}
     
     The character table of a group has columns labelled by conjugacy classes, and rows labelled by irreducible representations of the group.
     The entries into the table are then the characters associated with the conjugacy class labelling the column in the representation labelling the row.
@@ -1369,9 +1424,10 @@ noabbrev
     The culmination of these definitions and observations is that there is one irreducible representation of \(\symmetricGroup\) for every conjugacy class, one conjugacy class for every cycle type, one cycle type for every partition of \(n\), and one partition of \(n\) for every \(n\) box Young diagram.
     Hence there is a one-to-one correspondence between irreducible representations of \(\symmetricGroup\) and \(n\) box Young diagrams.
     So we can use \(n\) box Young diagrams to label irreducible representations of \(\symmetricGroup\).
-    This turns out to be more than just a useful naming system, we will show in \cref{sec:computing representations of Sn} how using a Young diagram, and the associated Young projector, we can construct the representation it labels.
+    This turns out to be more than just a useful naming system.
+    We will show in \cref{sec:computing representations of Sn} how using a Young diagram, and the associated Young projector, we can construct the representation it labels.
     
-    \section{Elements of \texorpdfstring{\(\symmetricGroup\)}{Sn} Labelled by Young Tableaux}
+    \section{Elements of \texorpdfstring{\(\symmetricGroup\)}{Sn} are Labelled by Young Tableaux}
     Consider \(\symmetricGroup\) and fix some \(n\) box Young diagram, \(Y\).
     The identity permutation can be represented by the Young tableau of shape \(Y\) with the numbers 1 through \(n\) entered in order from left to right, top to bottom.
     For example, if we consider \(\symmetricGroup[5]\) and the Young diagram
@@ -1390,13 +1446,13 @@ noabbrev
         \ytableaushort{214,35}.
     \end{equation}
     This action defines a bijection between \(\symmetricGroup\) and the set of all Young tableaux of shape \(Y\).
-    Thus, there is a one-to-one correspondence between permutations and Young tableaux of a fixed shape, so we can label permutations with Young tableau of a fixed shape.
+    Thus, there is a one-to-one correspondence between permutations and Young tableaux of a fixed shape, so we can label permutations with Young tableaux of a fixed shape.
     The obvious shape to choose is the shape corresponding to the diagram labelling the representation we are interested in working in.
     
     \section{Dimension of the Representation}
     Let \(Y\) be an \(n\) box Young diagram labelling the irreducible representation \(\rho_Y\colon \symmetricGroup \to \generalLinear(V_Y)\) of the symmetric group \(\symmetricGroup\).
     It is possible to show that the dimension of \(V_Y\) is equal to the number of standard Young tableaux of shape \(Y\).
-    This number can in turn be computed using the \defineindex{hook formula}, which tells us that the number of standard tableaux of shape \(Y\), \(d_Y\), is given by
+    This number can in turn be computed using the \defineindex{hook formula} \cite[88]{cvitanovic}, which tells us that the number of standard tableaux of shape \(Y\), \(d_Y\), is given by
     \begin{equation}
         d_Y = \frac{n!}{\hooknumber{Y}} = \dim V_Y.
     \end{equation}
@@ -1417,7 +1473,7 @@ noabbrev
     \end{equation}
     standard tableaux of this shape, which agrees with what we've written down.
     
-    What this tells us is that there is a one-to-one correspondence between standard Young tableau of a given shape and a basis for the representation space associated with that shape.
+    What this tells us is that there is a one-to-one correspondence between standard Young tableaux of a given shape and a basis for the representation space associated with that shape.
     We will make use of this in the next section when it comes to actually computing the representations of \(\symmetricGroup\).
     
     These relations between Young diagrams and tableaux and the representation theory of the symmetric group are summarised in \cref{fig:one-to-one relations in Sn}.
@@ -1587,7 +1643,7 @@ noabbrev
     Here we have acted on the inputs to the Young projector.
     Then interpreted this as acting by permutations on the underlying Young tableau.
     We then decomposed the permuted Young tableau into a sum of standard tableaux using the Garnir relations.
-    Finally we take this linear combination of standard tableaux and replace each standard tableaux with the corresponding standard permutation acting on the ordered tableau.
+    Finally, we take this linear combination of standard tableaux and replace each standard tableaux with the corresponding standard permutation acting on the ordered tableau.
     Thus we are left with a linear combination of standard permutations acting on the Young projector associated with the Young diagram \(Y\).
     We then interpret this as a sum of basis vectors in the representation space.
     
@@ -1689,9 +1745,14 @@ noabbrev
     This allows us to compute the representation of Young projectors.
     This is useful since we can then efficiently perform calculations on a computer using these matrix representations.
     
+    \subsection{The Code}
+    This process is implemented in the code as the function \lstinline|representation| which takes a permutation of the built in type \lstinline|Cycles| and a Young tableau labelling the representation and returns the matrix corresponding to the permutation in this representation.
+    The methods \lstinline|hookLengths|, \lstinline|hookNumber|, and \lstinline|hookFormula| all take a Young tableau and return the hook lengths, hook number (the product of the hook lengths), and dimension of the representation space (the number of standard tableaux of that shape).
+    The method \lstinline|generateStandardTableaux| takes a Young tableau and lists all standard Young tableaux of that shape.
+    
     \chapter{Applications to \texorpdfstring{\(\specialUnitary(N)\)}{SU(N)}}
     Recall that the special unitary group, \(\specialUnitary(N)\), is defined to be the group of unitary \(N \times N\) matrices with determinant 1.
-    In this section we will focus on the representation theory of \(\specialUnitary(N)\) with a goal of computing scalars, quantities invariant under \(\specialUnitary(N)\)/
+    In this section we will focus on the representation theory of \(\specialUnitary(N)\) with a goal of computing scalars, quantities invariant under \(\specialUnitary(N)\).
     The motivation for studying \(\specialUnitary(N)\) is its prevelance in quantum field theory, particularly as \(\specialUnitary(3)\) in quantum chromodynamics and \(\specialUnitary(2)\) in electroweak theory.
     
     \section{\texorpdfstring{\(\specialUnitary(N)\)}{SU(N)} in Quantum Field Theory}
@@ -1706,10 +1767,10 @@ noabbrev
     Quarks are fermions, meaning they are represented by spinors, whereas gluons are vector bosons, meaning they are represented by four-vector quantities.
     As well as being in some spinor or Minkowski space, both of which are just representation spaces of \(\specialOrthogonal^+(1, 3)\) capturing the Lorentz transformations of the fields, quarks and gluons are also elements of some vector space transforming under \(\specialUnitary(3)\).
     In particular, quarks are in the fundamental representation, which is three dimensional so is often denoted \(\rep{3}\).
-    Gluons are in the adjoint representation, which is eight dimensional, so is often denoted \(\rep{8}\).
+    Gluons are in the adjoint representation, which is eight dimensional, so is often denoted \(\rep{8}\) \cite{peskin}.
     
     \section{Representations of \texorpdfstring{\(\specialUnitary(N)\)}{SU(N)}}
-    The irreducible representations of the unitary group, \(\unitary(N)\), can be labelled with \(k\) box standard Young tableaux with no more than \(N\) rows.
+    The irreducible representations of the unitary group, \(\unitary(N)\), can be labelled with \(k\) box standard Young tableaux with no more than \(N\) rows \cite[87]{cvitanovic}.
     The reason is that we interpret a \(k\) box diagram as a \(k\) index tensor, which we in turn interpret as a product of \(k\) vectors, each giving the state of a particle.
     So, a \(k\) box Young tableau corresponds to a \(k\) particle state.
     Since \(\unitary(N)\) has \(N\) labels for the particles, generalising the 3 colour labels of \(\specialUnitary(3)\) or single charge label of \(\unitary(1)\), we cannot antisymmetrise over more than \(N\) boxes without getting zero.
@@ -1741,7 +1802,7 @@ noabbrev
     \end{equation}
     Less abstractly, work in \(\specialUnitary(3)\) and consider the diagrams
     \begin{equation}
-        Y_1 = \ydiagram{1}, \qqand Y_2 = \ydiagram{2,1}.
+        Y_1 = \ydiagram{1}\mkern2mu, \qqand Y_2 = \ydiagram{2,1}.
     \end{equation}
     We have
     \begin{align}
@@ -1756,14 +1817,10 @@ noabbrev
     
     \section{Computing Scalars}
     A scalar has no indices.
-    Thus in the diagrammatic notation it corresponds to a quantity with no external legs.
+    Thus in the diagrammatic notation it corresponds to a quantity with no external legs \cite[45]{cvitanovic}.
     Scalars are invariant under the group action.
     This means that these are exactly the objects we are interested in for building the Lagrangian of a field theory.
     We present here a general method for simplifying scalars in \(\specialUnitary(N)\) until they are reduced to a few simple building blocks, which can then be dealt with by computing Young projectors.
-    
-    That Young projectors are relevant to \(\specialUnitary(N)\) may be surprising, since we first constructed them when discussing the symmetric group.
-    However, since Young tableaux label the irreducible representations of \(\specialUnitary(N)\) we can also construct and interpret Young projectors in \(\specialUnitary(N)\).
-    Here the understanding of the symmetrisers and antisymmetrisers is that they describe the symmetry of exchanging particles, with a \(k\) box Young diagram corresponding to a \(k\) particle state.
     
     Even more useful is the fact that we don't actually need to compute the Young projectors in \(\specialUnitary(N)\), only in \(\symmetricGroup\).
     We've already seen how to compute the representation of Young projectors in \(\symmetricGroup\), so once we have reduced a scalar to some combination of Young projectors we are finished.
@@ -1772,8 +1829,9 @@ noabbrev
     The following sections summarise the key parts of these sections and add in additional explanations.
     
     \subsection{Projectors}
-    Consider a \(d \times d\) Hermitian matrix \(M\) acting on the space \(d = n^{p + q}\) dimensional space \(\symcal{V} = V^{\otimes p} \otimes \dual{V}^{\otimes q}\), with \(n = \dim V\).
-    This can be diagonalised by some unitary matrix, \(D\), then we have
+    Consider a \(d \times d\) Hermitian matrix \(M\) acting on the \(d = n^{p + q}\) dimensional space \(\symcal{V} = V^{\otimes p} \otimes \dual{V}^{\otimes q}\), with \(n = \dim V\).
+    This can be diagonalised by some unitary matrix, \(D\), and we can order the basis such that all equal eigenvalues are grouped together.
+    Then we have
     \begin{equation}
         DMD^{\hermit} = 
         \begin{pmatrix}
@@ -1825,7 +1883,7 @@ noabbrev
     which appears as part of the definition of the projector \(\projector{i}\).
     The matrix we get upon computing this product has non-zero entries only in a \(d_i \times d\) block.
     We call this block \(C_i\).
-    These blocks are called \defineindex{Clebsch--Gordan coefficients}.
+    These blocks are called \define{Clebsch--Gordan coefficients}\index{Clebsch--Gordan coefficient}.
     The elements of this matrix are \((C_i)_\sigma^\alpha\), where \(\alpha = 1, \dotsc, d\) and \(\sigma = 1, \dotsc, d_i\).
     Here \(\alpha\) stands for all tensor indices associated with the \(d = n^{p + q}\) dimensional tensor space \(V^{\otimes p} \otimes \dual{V}^{\otimes q}\).
     This means we can replace the single index \(\alpha\) with \(d\) individual indices, \(\tensor{\mathstrut}{^\alpha} = \tensor*{\mathstrut}{^{b_p \dotso b_1}_{a_q\dotso a_1}}\), where \(a_j, b_j = 1, \dotsc, n\).
@@ -1845,10 +1903,10 @@ noabbrev
         \end{tikzpicture}
         .
     \end{equation}
-    This is a map \(V \to V_i\), where \(V_i\) is viewed as a subspace of \(V\), so we can treat it as having dimension \(d_i\) or dimension \(d\).
+    This is a map \(V \to V_i\), where \(V_i\) is viewed as a subspace of \(V\), so we can write maps on \(V_i\) as either \(d_i \times d_i\) matrices acting on \(V_i\) or as \(d \times d\) matrices acting on all of \(V\), including \(V_i\).
     The label \(i\) labels the subspace onto which we are projecting.
     We also have the conjugate mapping \(V_i \to \dual{V}\) which we get by instead considering the product
-    \begin{equation}
+    \begin{equation}\label{eqn:conjugate clebsch}
         D^\hermit
         \begin{pmatrix}
             0\identityMatrix_{V_1} \\
@@ -1875,11 +1933,12 @@ noabbrev
         .
     \end{equation}
     
-    We can recover the projection operators from the Clebsch--Gordan coefficients:
+    Since this diagonal matrix is idempotent we can recover the projection operators from the Clebsch--Gordan coefficients:
     \begin{equation}
-        \projector{i} = C^i C_i \qquad \text{(no sum on \(i\))}
+        \text{(no sum on \(i\))} \qquad C^i C_i = D^{\hermit} P^2 D = D^\hermit P D = \projector{i}
     \end{equation}
-    or in the diagrammatic notation
+    where \(P\) is the matrix appearing in the product with \(D^\hermit\) in \cref{eqn:conjugate clebsch}.
+    In the diagrammatic notation this becomes
     \begin{equation}
         \tikzsetnextfilename{scalars-clebsch-square-to-projector}
         \begin{tikzpicture}[baseline=(equal.base)]
@@ -1914,7 +1973,7 @@ noabbrev
         .
     \end{equation}
     
-    The completeness relation, \(\sum_i \projector{i} = \identity_{\symcal{V}}\), becomes \(\sum_i C^iC_i = \identity_{\symcal{V}}\), or in the diagrammatic notation
+    The completeness relation, \(\sum_i \projector{i} = \identityMatrix_{\symcal{V}}\), becomes \(\sum_i C^iC_i = \identityMatrix_{\symcal{V}}\), or in the diagrammatic notation
     \begin{equation}
         \sum_{i=1}^{k}
         \tikzsetnextfilename{scalars-completeness-of-clebsch}
@@ -1970,7 +2029,8 @@ noabbrev
     We instead work with the projection operators, which allows us to avoid much of this tedious work.
     
     \subsection{Recoupling Relations}
-    We now consider Clebsch--Gordan coefficients \(V_\mu \otimes V_\nu \to V_\lambda\), where each of these spaces is viewed as a subspace of some space \(\symcal{V}\).
+    Now fix irreducible representations \(V_\mu\), \(V_\nu\), and \(V_\lambda\).
+    We will consider the Clebsch--Gordan coefficients \(V_\mu \otimes V_\nu \to V_\lambda\), where each of these spaces is viewed as a subspace of some space \(\symcal{V}\).
     These Clebsch--Gordan coefficients can be drawn as
     \begin{equation}
         \tikzsetnextfilename{scalars-clebsch-2}
@@ -2034,7 +2094,7 @@ noabbrev
         \end{tikzpicture}
         .
     \end{equation}
-    Notice that this is simply the orthogonality of the Clebsch--Gordan coefficients (\cref{eqn:clebsch orthogonal}) in terms of the 3-vertices.
+    This is simply the orthogonality of the Clebsch--Gordan coefficients (\cref{eqn:clebsch orthogonal}) in terms of the 3-vertices.
     We do not fix the normalisation, \(a_\lambda\), in an attempt to be as general as possible.
     
     These \(3j\) coefficients are actually very common in physics, we just don't always call them \(3j\)s.
@@ -2255,7 +2315,7 @@ noabbrev
     Continually applying this we will be left with one long chain, which in the full diagram is part of some other loop.
     We can then contract that loop, and any other loop, leaving us with just \(3j\)s, \(6j\)s, and dimensions.
     
-    \subsection{Computing \texorpdfstring{\(3j\)s and \(6j\)s}{3js and 6js}}
+    \subsection{Computing \texorpdfstring{\(3j\)s and \(6j\)s}{3js and 6js}}\label{sec:computing 3js and 6js}
     All we need to compute a scalar is to compute the \(3j\) and \(6j\) coefficients.
     This can be done using Young projectors, the representations of which we can compute using the method laid out in \cref{sec:computing representations of Sn}.
     First, consider an expression of the form
@@ -2542,7 +2602,7 @@ noabbrev
         We assume the reader is familiar with basic linear algebra, specifically working with vectors and matrices.
         We will make use of certain concepts, such as direct sums and dual spaces, which are less common in physics, so we shall define them here.
         
-        \section{Vector Spaces}
+        \section{Vector Spaces}\label{sec:vector spaces}
         Recall that a \defineindex{vector space} is a set, \(V\), along with a field of scalars, \(\field\), equipped with the operations of vector addition \(+ \colon V \times V \to V\), and scalar multiplication, \(\field \times V \to V\), such that
         \begin{itemize}
             \item \((V, +)\) is an Abelian group,
@@ -2562,7 +2622,7 @@ noabbrev
         Vector addition in \(\dual{V}\) is defined pointwise, so given linear maps \(\varphi, \psi \in \dual{V}\) their sum is the linear map \(\varphi + \psi \in \dual{V}\) defined by \((\varphi + \psi)(v) = \varphi(v) + \psi(v)\).
         Similarly, scalar multiplication in \(\dual{V}\) is defined such that given \(z \varphi \in \dual{V}\) and \(z \in \field\) we have \(z\varphi \in \dual{V}\) defined by \((z\varphi)(v) = z[\varphi(v)]\).
         
-        \section{Tensor Products}
+        \section{Tensor Products}\label{sec:tensor products}
         Given two vector spaces \(V\) and \(W\) over \(\field\) we can form a new vector space, also over \(\field\), called their \defineindex{tensor product}, \(V \otimes W\).
         The simplest definition of the tensor product is basis dependent.
         Given bases \(\{e_i\}\) and \(\{d_j\}\) for \(V\) and \(W\) respectively \(V \otimes W\) is the span, that is all linear combinations, of \(\{e_i \otimes d_j\}\), where \(e_i \otimes d_j\) is the tensor product of the basis vectors \(e_i\) and \(d_j\).
@@ -2579,14 +2639,17 @@ noabbrev
         That is, the vector with components \(v^iw^j\).
         So in index notation the tensor product is simply given by putting the vectors, or more generally tensors, next to each other with distinct indices.
         
-        \section{Direct Sum}
+        \section{Direct Sum}\label{sec:direct sums}
         Given two vector spaces \(V\) and \(W\) over \(\field\) we can form a new vector space, also over \(\field\), called their \defineindex{direct sum}, \(V \oplus W\).
         The vectors here are the elements of the Cartesian product \(V \times W\), so take the form \((v, w)\) with \(v \in V\) and \(w \in W\).
         Vector addition is defined by \((v, w) + (v', w') = (v + v', w + w')\) for \(v, v' \in V\) and \(w, w' \in W\).
         Scalar addition is defined by \(z(v, w) = (zv, zw)\) for \(z \in \field\), \(v \in V\) and \(w \in W\).
+        We might write \((v, w)\) as \(v \oplus w\).
         Notice that \(\dim(V \oplus W) = \dim(V) + \dim(W)\).
         
         Given a vector space \(V\) with subspace \(W\) we can identify a second subspace \(W^{\perp}\) which is such that \(V = W \oplus W^{\perp}\).
+        
+        Given linear maps \(\varphi \colon V \to V'\) and \(\psi \colon W \to W'\) we can define a linear map \(\varphi \oplus \psi \colon V \oplus W \to V' \oplus W'\) by \((\varphi \oplus \psi)(v \oplus w) = \varphi(v) \oplus \psi(w)\).
         
         \section{Algebra}\label{sec:algebras}
         An \defineindex{algebra}, \(A\), over \(\field\) is a vector space over \(\field\) with an additional product \(A \times A \to A\) allowing us to multiply two vectors.
@@ -2635,6 +2698,19 @@ noabbrev
         This is the same definition we give in \cref{def:tensor}, although we then immediately switch to discussing the components.
         
         The relation between the two mathematician's definitions is due to the tensor-hom adjunction which says that there a canonical bijective mapping between tensor products and linear maps.
+        
+        \section{Equivalence Relations}\label{sec:equivalence relations}
+        A \defineindex{relation}, \(R\), on sets \(A\) and \(B\) is a subset of \(A \times B\).
+        If \((a, b) \in R\) we write \(a \mathbin{R} b\).
+        An \defineindex{equivalence relation}, \(\sim\), is a binary relation on a set \(A\), that is a subset of \(A \times A\), such that the following hold:
+        \begin{itemize}
+            \item reflexivity: for all \(a \in A\) we have \(a \sim a\),
+            \item symmetry: for all \(a, b \in A\) if \(a \sim b\) then \(b \sim a\), and
+            \item transitivity: for all \(a, b, c \in A\) if \(a \sim b\) and \(b \sim c\) then \(a \sim c\).
+        \end{itemize}
+        
+        The \defineindex{equivalence class} of \(a \in A\) is the set \([a] \coloneqq \{b \in A \mid a \sim b\}\).
+        The equivalence classes partition \(A\), that is \(A = \bigcup_{a \in A} [a]\) and distinct equivalence classes are disjoint, either \([a] = [b]\) or \([a] \cap [b] = \emptyset\).
         
         \chapter{Garnir Relations Example}\label{app:garnir example}
         \section{Recursive Application}
