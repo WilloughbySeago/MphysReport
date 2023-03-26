@@ -19,6 +19,8 @@
 \usetikzlibrary{decorations.markings}
 \usetikzlibrary{calc}
 \usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{patterns}
+\usetikzlibrary{calligraphy}
 
 \usepackage{tikz-cd}
 
@@ -82,6 +84,16 @@ noabbrev
 \tikzset{electron/.style={postaction={decorate, decoration={markings, mark=at position #1 with {\arrow{Latex[width=1.5mm]}}}}}}
 \tikzset{electron/.default=0.5}
 \tikzset{photon/.style={decoration={snake, amplitude=1.25, segment length=6}, decorate}}
+\pgfdeclarepatternformonly{south west lines}{\pgfqpoint{-0pt}{-0pt}}{\pgfqpoint{3pt}{3pt}}{\pgfqpoint{3pt}{3pt}}{
+    \pgfsetlinewidth{0.4pt}
+    \pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+    \pgfpathlineto{\pgfqpoint{3pt}{3pt}}
+    \pgfpathmoveto{\pgfqpoint{2.8pt}{-.2pt}}
+    \pgfpathlineto{\pgfqpoint{3.2pt}{.2pt}}
+    \pgfpathmoveto{\pgfqpoint{-.2pt}{2.8pt}}
+    \pgfpathlineto{\pgfqpoint{.2pt}{3.2pt}}
+    \pgfusepath{stroke}}
+\tikzset{blob/.style={thick, pattern={south west lines}}}
 
 % Text
 \newcommand{\Mathematica}{\textit{Mathematica}}
@@ -139,11 +151,36 @@ noabbrev
         \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, #1) -- ++ (0.01, 0);
         \draw[wire, postaction={decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}}] (0.05, -#1) -- ++ (0.01, 0);
         \node[font=\tiny] at (30:0.41) {\(#3\)};
-        \node[font=\tiny] at (-30:0.4) {\(#2\)};
+        \node[font=\tiny] at (-30:0.4) {\(#4\)};
         \fill (#1, 0) circle [radius = 0.05];
         \fill (-#1, 0) circle [radius = 0.05];
     \end{tikzpicture}%
 }
+\newcommand{\threejnoarrow}[4][0.3]{%
+    \begin{tikzpicture}
+        \draw[wire] (0, 0) circle [radius=#1];
+        \draw[wire] (-#1, 0) -- (#1, 0) node [midway, above, font=\tiny, yshift=-0.05cm] {\(#2\)};
+        \node[font=\tiny] at (30:0.41) {\(#3\)};
+        \node[font=\tiny] at (-30:0.4) {\(#4\)};
+        \fill (#1, 0) circle [radius = 0.05];
+        \fill (-#1, 0) circle [radius = 0.05];
+    \end{tikzpicture}%
+}
+\newcommand{\sixjnoarrow}[7][0.5]{%
+    \begin{tikzpicture}
+        \draw[wire] (0, 0) circle [radius=#1];
+        \draw[wire] (0, 0) -- (-30:#1) node [pos=0.6, above, font=\tiny, shift={(-0.03, -0.03)}] {\(#6\)};
+        \draw[wire] (0, 0) -- (210:#1) node [pos=0.6, above, font=\tiny, shift={(0.03, -0.03)}] {\(#7\)};
+        \draw[wire] (0, 0) -- (90:#1) node [midway, right, font=\tiny, xshift=-0.07cm] {\(#5\)};
+        \fill (-30:#1) circle [radius=0.05];
+        \fill (210:#1) circle [radius=0.05];
+        \fill (90:#1) circle [radius=0.05];
+        \node[font=\tiny] at (-90:#1-0.15) {\(#2\)};
+        \node[font=\tiny] at (30:#1+0.2) {\(#4\)};
+        \node[font=\tiny] at (150:#1+0.2) {\(#3\)};
+    \end{tikzpicture}%
+}
+\DeclarePairedDelimiterX{\commutator}[2]{[}{]}{#1, #2}
 
 \includeonly{}
 
@@ -312,7 +349,20 @@ noabbrev
         A \defineindex{Lie group}, \(G\), is a group which is also a manifold in a compatible way \cite{san-martin-lie-groups}.
         In particular, the product map, \(\cdot \colon G \times G \to G\), is analytic.
     \end{dfn}
-    % TODO: define a Lie algebra
+    
+    Given a Lie group, \(G\), it is possible to parametrise the group elements as \(g = \exp\{i\vartheta_aT^a\}\) for some objects \(T^a\), which we call the \define{generators}\index{generator} of \(G\), and scalars \(\vartheta_a \in \field\) and \(a = 1, \dotsc, \dim G\).
+    The generators \(T^a\) span a vector space, \(\lie{g}\), over a field, \(\field\), called the \defineindex{Lie algebra} of \(G\).
+    An \defineindex{algebra} is a vector space, \(V\), equipped with a product of vectors, \(V \times V \to V\), which is compatible with vector addition and multiplication, see \cref{sec:algebras} for details.
+    The product in the case of a Lie algebra is the \defineindex{Lie bracket}, \(\commutator{-}{-} \colon \lie{g} \times \lie{g} \to \lie{g}\).
+    This has the following properties:
+    \begin{itemize}
+        \item linearity in both arguments: \(\commutator{ax + by}{z} = a\commutator{x}{z} + b\commutator{y}{z}\) and \(\commutator{x}{ay + bz} = a\commutator{x}{y} + b\commutator{x}{z}\) for all \(a, b \in \field\) and \(x, y, z \in \lie{g}\),
+        \item antisymmetry: \(\commutator{x}{x} = 0\) for all \(x \in \lie{g}\),
+        \item the \defineindex{Jacobi identity}: \(\commutator{x}{\commutator{y}{z}} + \commutator{y}{\commutator{z}{x}} + \commutator{z}{\commutator{x}{y}} = 0\) for all \(x, y, z \in \lie{g}\).
+    \end{itemize}
+    The first two properties combined imply anticommutativity\footnote{So long as \(\field\) is not characteristic 2. Both \(\reals\) and \(\complex\) have characteristic 0.}: \(\commutator{x}{y} = -\commutator{y}{x}\) for all \(x, y \in \lie{g}\).
+    For the examples of matrix Lie groups above the Lie bracket is simply the commutator \(\commutator{x}{y} = xy - yx\), and the Lie algebra is some collection of matrices under matrix multiplication.
+    For example, \(\specialUnitaryLie(N)\) consists of Hermitian\footnote{Hermitian because we include a factor of \(i\) in \(\exp\{i\vartheta_a T^a\}\), mathematicians typically don't do this and so take \(T^a\) to be traceless anti-Hermitian matrices.} traceless matrices over \(\complex\).
     
     Most of the time when considering a group we think of the symmetries it represents being applied to some object.
     Indeed, even group multiplication can be viewed as the symmetries of the group being applied to itself.
@@ -456,6 +506,23 @@ noabbrev
             \end{pmatrix}
             .
         \end{multline}
+    \end{exm}
+    
+    \begin{exm}{Fundamental and Adjoint Representations}{}
+        Given a Lie group, \(G\), there are two representations we are generally interested in.
+        The first is the \defineindex{fundamental}\index{fundamental representation}, or defining, representation.
+        This is the representation used to define the group.
+        For example, given a matrix Lie group of \(N \times N\) matrices over \(\field\) the fundamental representation is \(\field^N\) and the group acts on this space by matrix multiplication.
+        This is an \(N\) dimensional representation.
+        
+        The other representation is the \defineindex{adjoint representation}, in which the Lie group acts on the Lie algebra.
+        We will restrict ourselves to the case where the Lie group is a matrix group.
+        Then this action is given by conjugation, \(g \action T^a = gT^a g^{-1}\), where the product on the right is matrix multiplication.
+        This representation has the same dimension as \(G\) and \(\lie{g}\).
+        For example, in the case of \(\specialUnitary(N)\) there are \(N^2 - 1\) \(N \times N\) traceless Hermitian matrices, so the adjoint representation has dimension \(N^2 - 1\).
+        
+        These representations are important in quantum field theory, since the representation a particle transforms under tells us a lot about the properties of that particle.
+        In particular, for \(\specialUnitary(3)\) the fundamental representation is 3 dimensional, corresponding to the 3 colours, and the adjoint representation is 8 dimensional, corresponding to the 8 gluons.
     \end{exm}
     
     There are an infinite number of representations of any group, however, they are not all equally interesting.
@@ -1622,8 +1689,9 @@ noabbrev
     Contracting with the Levi--Civita tensor we can remove any column of length \(N\).
     This means that representations of \(\specialUnitary(N)\) can be labelled with \(k\) box standard Young tableaux with no more than \(N - 1\) rows.
     
-    Given a Young diagram, \(Y\), labelling a representation \(V\) of \(\specialUnitary(N)\) we can compute the dimension using the following formula:
-    \begin{equation}
+    Given a Young diagram, \(Y\), labelling a representation \(V\) of \(\specialUnitary(N)\) the dimension of \(V\) is given by \(\tr(\projector{Y})\) where \(\projector{Y}\) is the Young projector associated with \(Y\).
+    The dimension can also be calculated without computing the Young projector using the formula
+    \begin{equation}\label{eqn:dim of SU N rep}
         \dim V = \frac{f_Y(N)}{\hooknumber{Y}}.
     \end{equation}
     Here \(f_Y\) is a polynomial in \(N\) given by placing \(N\) in the top left box of \(Y\), then increasing by one with each box to the right.
@@ -1917,7 +1985,7 @@ noabbrev
             \end{tikzpicture}
         }{d_\lambda}.
     \end{equation}
-    We call this diagram a \define{\(3j\) coefficient}\index{3j coefficient@\(3j\) coefficient}.
+    We call this diagram a \define{\(\symbf{3j}\) coefficient}\index{3j coefficient@\(3j\) coefficient}.
     This normalisation choice is such that
     \begin{equation}
         \tikzsetnextfilename{scalars-3-vertex-normalisation}
@@ -1960,7 +2028,7 @@ noabbrev
     \begin{equation}
         \tikzsetnextfilename{scalars-completeness-with-3-vertices}
         \begin{tikzpicture}[baseline=(current bounding box)]
-            \node (equal) at (-1.5, -0.2) {\(\displaystyle {} = \sum_{\lambda} \frac{d_\lambda}{\threej{\lambda}{\mu}{\nu}}\)};
+            \node (equal) at (-1.5, -0.2) {\(\displaystyle {} = \sum_{\lambda} \frac{d_\lambda}{\threejnoarrow{\lambda}{\mu}{\nu}}\)};
             \draw[wire] (0, 0) -- (1, 0) node [midway, above, font=\scriptsize] {\(\lambda\)};
             \draw[wire] (0, 0) -- (135:0.75);
             \draw[wire] (0, 0) -- (-135:0.75);
@@ -1990,15 +2058,413 @@ noabbrev
     \end{equation}
     Using the recoupling relation twice, once on the two incoming wires and once on the two outgoing wires we get
     \begin{equation}
-        content...
+        \tikzsetnextfilename{scalars-recoupled-t-channel}
+        \begin{tikzpicture}[baseline=(equal.base), font=\scriptsize]
+            \draw[wire] (0.3, 0) -- (2.3, 0) node [pos=0.25, below, yshift=0.075cm] {\(\rho\)} node [pos=0.75, below, yshift=0.075cm] {\(\nu\)};
+            \draw[wire] (0.3, 1) -- (2.3, 1) node [pos=0.25, above, yshift=-0.075cm] {\(\sigma\)} node [pos=0.75, above, yshift=-0.075cm] {\(\mu\)};
+            \draw[wire] (1.3, 0) -- (1.3, 1) node [midway, right, xshift=-0.075cm] {\(\omega\)};
+            \fill (1.3, 0) circle [radius=0.05];
+            \fill (1.3, 1) circle [radius=0.05];
+            \node (equal) at (2.5, 0.5) {\(=\)};
+            \node[right] at (equal) {\(\displaystyle \sum_{\lambda, \lambda'} \frac{d_\lambda}{\mathstrut\smash{\raisebox{0.3cm}{{\threejnoarrow{\lambda}{\mkern-10mu\sigma}{\mkern-10mu\rho}}}}} \frac{d_{\lambda'}}{\mathstrut\smash{\raisebox{0.3cm}{\threejnoarrow{\lambda'}{\mkern-10mu\mu}{\mkern-10mu\nu}}}}\)};
+            \draw[wire] (5.5, 0.5) -- ++ (1, 0) node [midway, above] {\(\lambda\)};
+            \draw[wire] (5.5, 0.5) -- ++ (135:0.75) node [pos=0.3, above] {\(\sigma\)};
+            \draw[wire] (5.5, 0.5) -- ++ (-135:0.75) node [pos=0.3, below] {\(\rho\)};
+            \draw[wire] (6.5, 0.5) -- ++ (45:0.75) coordinate (A) node [pos=0.3, above] {\(\sigma\)};
+            \draw[wire] (6.5, 0.5) -- ++ (-45:0.75) coordinate (B) node [pos=0.3, below] {\(\rho\)};
+            \draw[wire] (A) -- (B) node [midway, right, xshift=-0.08cm] {\(\omega\)};
+            \draw[wire] (A) -- ++ (-45:0.75) node [pos=0.7, above] {\(\mu\)};
+            \draw[wire] (B) -- ++ (45:0.75) coordinate (C) node [pos=0.7, below] {\(\nu\)};
+            \draw[wire] (C) -- ++ (1, 0) coordinate (D) node [pos=0.7, above] {\(\lambda\mathrlap{'}\)};
+            \draw[wire] (D) -- ++ (45:0.75) node [pos=0.3, above] {\(\mu\)};
+            \draw[wire] (D) -- ++ (-45:0.75) node [pos=0.3, below] {\(\nu\)};
+        \end{tikzpicture}
+        .
     \end{equation}
+    We can further simplify this if we assume that \(V_\lambda\) and \(V_{\lambda'}\) correspond to irreducible representations.
+    Notice that the middle of this diagram takes on the form
+    \begin{equation}
+        \tikzsetnextfilename{scalars-irrep-op}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \draw[blob] (0, 0) circle [radius=0.5];
+            \draw[wire] (0.5, 0) -- ++ (1, 0);
+            \draw[wire] (-0.5, 0) -- ++ (-1, 0);
+        \end{tikzpicture}
+    \end{equation}
+    where the two external wires are irreducible representations.
+    This is an operator taking an irreducible subspace to another irreducible subspace.
+    By virtue of being irreducible this means that these subspaces must actually be equal and this operator is proportional to the identity.
+    That is
+    \begin{equation}
+        \tikzsetnextfilename{scalars-irrep-op-propto-identity}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \draw[blob] (0, 0) circle [radius=0.5];
+            \draw[wire] (0.5, 0) -- ++ (1, 0);
+            \draw[wire] (-0.5, 0) -- ++ (-1, 0);
+            \node at (1.8, -0.01) {\({} = \kappa\)};
+            \draw[wire] (2.2, 0) -- ++ (1, 0);
+        \end{tikzpicture}
+    \end{equation}
+    Taking the trace of this equation we get
+    \begin{equation}
+        \tikzsetnextfilename{scalars-trace-irrep-op}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \draw[blob] (0, 0) circle [radius=0.5];
+            \draw[wire] (0.5, 0) -- ++ (0.3, 0) arc (90:-90:0.3) -- ++ (-1.6, 0) arc (270:90:0.3) -- ++ (0.3, 0);
+            \node at (1.5, -0.05) {\({} = \smash{\kappa}\)};
+            \draw[wire] (2.4, 0) circle [radius=0.5];
+            \node at (3.35, -0.05) {\({} = \smash{\kappa d}\)};
+        \end{tikzpicture}
+    \end{equation}
+    where \(d\) is the dimension of the irreducible representation.
+    Thus, we find that
+    \begin{equation}
+        \tikzsetnextfilename{scalars-irrep-op-in-terms-of-trace}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \draw[blob] (0, 0) circle [radius=0.5];
+            \draw[wire] (0.5, 0) -- ++ (1, 0);
+            \draw[wire] (-0.5, 0) -- ++ (-1, 0);
+            \node at (1.8, -0.01) {\(=\)};
+            \node[right] at (2, 0) {\(\displaystyle \frac{
+                    \begin{tikzpicture}
+                        \draw[blob] (0, 0) circle [radius=0.3];
+                        \draw[wire] (0.3, 0) arc (90:-90:0.2) -- ++ (-0.6, 0) arc (270:90:0.2);
+                    \end{tikzpicture}
+                }{d}\)};
+            \draw[wire] (3.5, 0) -- ++ (1, 0);
+        \end{tikzpicture}
+        .
+    \end{equation}
+    Using this, and using the identity as the Kronecker delta to eliminate one of the sums, we get the result
+    \begin{equation}\label{eqn:s and t channel relation}
+        \tikzsetnextfilename{scalars-s-t-channel-relation}
+        \begin{tikzpicture}[baseline=(equal.base), font=\scriptsize]
+            \draw[wire] (0.3, 0) -- (2.3, 0) node [pos=0.25, below, yshift=0.075cm] {\(\rho\)} node [pos=0.75, below, yshift=0.075cm] {\(\nu\)};
+            \draw[wire] (0.3, 1) -- (2.3, 1) node [pos=0.25, above, yshift=-0.075cm] {\(\sigma\)} node [pos=0.75, above, yshift=-0.075cm] {\(\mu\)};
+            \draw[wire] (1.3, 0) -- (1.3, 1) node [midway, right, xshift=-0.075cm] {\(\omega\)};
+            \fill (1.3, 0) circle [radius=0.05];
+            \fill (1.3, 1) circle [radius=0.05];
+            \node (equal) at (2.5, 0.5) {\(=\)};
+            \node[right, yshift=-0.1cm] (sum) at (equal) {\(\displaystyle \sum_{\lambda, \lambda'} d_\lambda \)};
+            \node[right, yshift=0.2cm, xshift=0.3cm] at (sum) {\(\displaystyle \frac{\sixjnoarrow{\mkern-13mu\lambda}{\sigma}{\mkern-15mu\mu}{\omega}{\nu}{\rho}}{\mathstrut\smash{\raisebox{0.3cm}{{\threej{\lambda}{\mkern-10mu\sigma}{\mkern-10mu\rho}}}}\smash{\raisebox{0.3cm}{\threej{\lambda'}{\mkern-10mu\mu}{\mkern-10mu\nu}}}}\)};
+            \draw[wire] (6, 0.5) -- ++ (1, 0) node [midway, above] {\(\lambda\)};
+            \draw[wire] (6, 0.5) -- ++ (135:0.75) node [pos=0.3, above] {\(\sigma\)};
+            \draw[wire] (6, 0.5) -- ++ (-135:0.75) node [pos=0.3, below] {\(\rho\)};
+            \draw[wire] (7, 0.5) -- ++ (45:0.75) coordinate (A) node [pos=0.3, above] {\(\rho\)};
+            \draw[wire] (7, 0.5) -- ++ (-45:0.75) coordinate (B) node [pos=0.3, below] {\(\nu\)};
+            \node at (4.6, -0.6) {};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    In the language of Feynman diagrams this gives a relation between the \(s\)-channel and \(t\)-channel diagrams.
     
+    We call the diagram
+    \begin{equation}
+        \tikzsetnextfilename{scalars-6j-coefficient}
+        \sixjnoarrow{}{}{}{}{}{}
+    \end{equation}
+    appearing in this expression a \define{\(\symbf{6j}\) coefficient}\index{6j coefficient@\(6j\) coefficient}.
     
+    \subsection{Reducing Scalars}
+    Any group theoretical scalar quantity which can be written in terms of Clebsch--Gordan coefficients can be reduced to a sum of \(3j\) and \(6j\) coefficients by repeatedly applying the recoupling relations.
+    To demonstrate this we show that any loop appearing in such a diagram can be shrunk to zero.
+    Then given a scalar we can simplify it to a sum of \(3j\) and \(6j\) coefficients by shrinking the loops to zero and leaving behind only \(3j\) and \(6j\) coefficients, and factors such as \(d_\lambda\), which can be computed with \cref{eqn:dim of SU N rep}.
+    
+    Suppose we have a scalar diagram with the following subdiagram:
+    \begin{equation}
+        \tikzsetnextfilename{scalars-loop-subdiagram}
+        \begin{tikzpicture}
+            \foreach \angle/\name in {22.5/A, 67.5/B, 112.5/C, 157.5/D, 202.5/E, 247.5/F, 292.5/G, 337.5/H} {
+                \coordinate (\name) at (\angle:0.75);
+                \fill (\name) circle [radius=0.05];
+                \draw[wire] (\name) -- (\angle:1.25);
+            }
+            \draw[wire] (A) -- (B) -- (C) -- (D) -- (E) -- (F) -- (G) -- (H) -- cycle;
+        \end{tikzpicture}
+        .
+    \end{equation}
+    Rewriting this slightly we can apply \cref{eqn:s and t channel relation} and we find that
+    \begin{equation}
+        \tikzsetnextfilename{scalars-loop-reduction}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \draw[wire] (0, 0) coordinate (A) -- (0, 0.6) coordinate (B);
+            \draw[wire] (0, 0) -- ++ (-0.6, 0);
+            \draw[wire] (-0.6, 0) -- (0.6, 0) coordinate (C) -- ++ (-30:0.6) coordinate (D) -- ++ (30:0.6) coordinate (E) -- ++ (0, 0.6) coordinate (F) -- ++ (150:0.6) coordinate (G) -- ++ (210:0.6) coordinate (H) -- ++ (-1.2, 0);
+            \foreach \name in {A, B, C, D, E, F, G, H} {
+                \fill (\name) circle [radius=0.05];
+            }
+            \draw[wire] (C) -- ++ (0, -0.5);
+            \draw[wire] (D) -- ++ (0, -0.5);
+            \draw[wire] (E) -- ++ (-30:0.5);
+            \draw[wire] (F) -- ++ (30:0.5);
+            \draw[wire] (G) -- ++ (0, 0.5);
+            \draw[wire] (H) -- ++ (0, 0.5);
+            \node (equal) at (2.5, 0.3) {\(=\)};
+            \node[right, yshift=-0.12cm, xshift=0.1cm] (sum) at (equal) {\(\displaystyle \sum_{\lambda} d_{\lambda}\)};
+            \node[right, xshift=0.4cm] at (sum) {\(\displaystyle \frac{\hspace{0.2cm}{\sixjnoarrow[0.3]{}{}{}{}{}{}}}{\hspace{0.4cm}\mathclap{\threejnoarrow[0.2]{}{}{}} \hspace{0.6cm} \mathclap{\threejnoarrow[0.2]{}{}{}}}\)};
+            \draw[wire] (6.5, 0) coordinate (C1) -- ++ (-30:0.6) coordinate (D1) -- ++ (30:0.6) coordinate (E1) -- ++ (0, 0.6) coordinate (F1) -- ++ (150:0.6) coordinate (G1) -- ++ (210:0.6) coordinate (H1);
+            \draw[wire] (H1) -- ++ (-135:0.43) coordinate (I);
+            \draw[wire] (C1) -- ++ (135:0.43);
+            \draw[wire] (C1) -- ++ (-135:0.5);
+            \draw[wire] (D1) -- ++ (0, -0.5);
+            \draw[wire] (E1) -- ++ (-30:0.5);
+            \draw[wire] (F1) -- ++ (30:0.5);
+            \draw[wire] (G1) -- ++ (0, 0.5);
+            \draw[wire] (H1) -- ++ (135:0.5);
+            \draw[wire] (I) -- ++ (-0.6, 0) coordinate (J);
+            \draw[wire] (J) -- ++ (135:0.6);
+            \draw[wire] (J) -- ++ (-135:0.6);
+            \foreach \name in {C1, D1, E1, F1, G1, H1, I, J} {
+                \fill (\name) circle [radius=0.05];
+            }
+        \end{tikzpicture}
+        .
+    \end{equation}
+    We have successfully reduced the size of the loop by one Clebsch--Gordan coefficient.
+    If we repeat this process with the next edge in the loop we will get more \(3j\)s and \(6j\)s, and we will again reduce the size of the loop by one.
+    Continually applying this we will be left with one long chain, which in the full diagram is part of some other loop.
+    We can then contract that loop, and any other loop, leaving us with just \(3j\)s, \(6j\)s, and dimensions.
+    
+    \subsection{Computing \texorpdfstring{\(3j\)s and \(6j\)s}{3js and 6js}}
+    All we need to compute a scalar is to compute the \(3j\) and \(6j\) coefficients.
+    This can be done using Young projectors, the representations of which we can compute using the method laid out in \cref{sec:computing representations of Sn}.
+    First, consider an expression of the form
+    \begin{equation}
+        \tikzsetnextfilename{scalars-permutation-projector}
+        \begin{tikzpicture}[baseline=(current bounding box)]
+            \draw[wire] (-1, -0.5) -- (0, -0.5);
+            \draw[wire] (-1, 0.5) -- (0, 0.5);
+            \draw (0, -0.75) rectangle (0.5, 0.75) node [midway] {\(\sigma\)};
+            \node at (-0.5, 0) {\(\vdots\)};
+            \draw[wire] (0.5, 0.5) -- (1.5, 0.5);
+            \draw[wire] (0.5, -0.5) -- (1.5, -0.5);
+            \node at (1, 0) {\(\vdots\)};
+            \draw (1.5, -0.75) rectangle (2, 0.75) node [midway] {\(\projector{Y}\)};
+            \draw[wire] (2, 0.5) -- (3, 0.5);
+            \draw[wire] (2, -0.5) -- (3, -0.5);
+            \node at (2.5, 0) {\(\vdots\)};
+        \end{tikzpicture}
+    \end{equation}
+    where \(\sigma \in \symmetricGroup\) is a permutation and \(\projector{Y}\) is the Young projector associated with the Young diagram \(Y\).
+    Taking the trace of this we get
+    \begin{equation}
+        \tikzsetnextfilename{scalars-permutation-projector-trace}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw[wire] (0, -0.5) -- ++ (-0.3, 0) arc (90:270:0.2) -- ++ (2.6, 0) arc (-90:90:0.2) -- ++ (-0.3, 0);
+            \draw[wire] (0, 0.5) -- ++ (-0.3, 0) arc (270:90:0.2) -- ++ (2.6, 0) arc (90:-90:0.2) -- ++ (-0.3, 0);
+            \draw (0, -0.75) rectangle (0.5, 0.75) node [midway] {\(\sigma\)};
+            \node at (-0.2, 0) {\(\vdots\)};
+            \draw[wire] (0.5, 0.5) -- (1.5, 0.5);
+            \draw[wire] (0.5, -0.5) -- (1.5, -0.5);
+            \node at (1, 0) {\(\vdots\)};
+            \draw (1.5, -0.75) rectangle (2, 0.75) node [midway] {\(\projector{Y}\)};
+            \node at (2.2, 0) {\(\vdots\)};
+            \node (equal) at (3, 0) {\(=\)};
+            \begin{scope}[xshift=4cm]
+                \draw[wire] (0, -0.5) -- ++ (-0.3, 0) arc (90:270:0.2) -- ++ (4.1, 0) arc (-90:90:0.2) -- ++ (-0.3, 0);
+                \draw[wire] (0, 0.5) -- ++ (-0.3, 0) arc (270:90:0.2) -- ++ (4.1, 0) arc (90:-90:0.2) -- ++ (-0.3, 0);
+                \draw (0, -0.75) rectangle (0.5, 0.75) node [midway] {\(\sigma\)};
+                \node at (-0.2, 0) {\(\vdots\)};
+                \draw[wire] (0.5, 0.5) -- (1.5, 0.5);
+                \draw[wire] (0.5, -0.5) -- (1.5, -0.5);
+                \node at (1, 0) {\(\vdots\)};
+                \draw (1.5, -0.75) rectangle (2, 0.75) node [midway] {\(\projector{Y}\)};
+                \node at (2.5, 0) {\(\vdots\)};
+                \draw[wire] (2, 0.5) -- (3, 0.5);
+                \draw[wire] (2, -0.5) -- (3, -0.5);
+                \draw (3, -0.75) rectangle (3.5, 0.75) node [midway] {\(\projector{Y}\)};
+                \node at (3.7, 0) {\(\vdots\)};
+            \end{scope}
+        \end{tikzpicture}
+    \end{equation}
+    where we've used the idempotency of the projectors, \(\projector{Y}\projector{Y} = \projector{Y}\).
+    Since only connectivity matters in these diagrams we can move one of the projectors around to the front of this expression:
+    \begin{equation}
+        \tikzsetnextfilename{scalars-permutation-projector-sandwich}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw[wire] (0, -0.5) -- ++ (-0.3, 0) arc (90:270:0.2) -- ++ (2.6, 0) arc (-90:90:0.2) -- ++ (-0.3, 0);
+            \draw[wire] (0, 0.5) -- ++ (-0.3, 0) arc (270:90:0.2) -- ++ (2.6, 0) arc (90:-90:0.2) -- ++ (-0.3, 0);
+            \draw (0, -0.75) rectangle (0.5, 0.75) node [midway] {\(\sigma\)};
+            \node at (-0.2, 0) {\(\vdots\)};
+            \draw[wire] (0.5, 0.5) -- (1.5, 0.5);
+            \draw[wire] (0.5, -0.5) -- (1.5, -0.5);
+            \node at (1, 0) {\(\vdots\)};
+            \draw (1.5, -0.75) rectangle (2, 0.75) node [midway] {\(\projector{Y}\)};
+            \node at (2.2, 0) {\(\vdots\)};
+            \node (equal) at (3, 0) {\(=\)};
+            \begin{scope}[xshift=4cm]
+                \draw[wire] (0, -0.5) -- ++ (-0.3, 0) arc (90:270:0.2) -- ++ (4.1, 0) arc (-90:90:0.2) -- ++ (-0.3, 0);
+                \draw[wire] (0, 0.5) -- ++ (-0.3, 0) arc (270:90:0.2) -- ++ (4.1, 0) arc (90:-90:0.2) -- ++ (-0.3, 0);
+                \draw (0, -0.75) rectangle (0.5, 0.75) node [midway] {\(\projector{Y}\)};
+                \node at (-0.2, 0) {\(\vdots\)};
+                \draw[wire] (0.5, 0.5) -- (1.5, 0.5);
+                \draw[wire] (0.5, -0.5) -- (1.5, -0.5);
+                \node at (1, 0) {\(\vdots\)};
+                \draw (1.5, -0.75) rectangle (2, 0.75) node [midway] {\(\sigma\)};
+                \node at (2.5, 0) {\(\vdots\)};
+                \draw[wire] (2, 0.5) -- (3, 0.5);
+                \draw[wire] (2, -0.5) -- (3, -0.5);
+                \draw (3, -0.75) rectangle (3.5, 0.75) node [midway] {\(\projector{Y}\)};
+                \node at (3.7, 0) {\(\vdots\)};
+            \end{scope}
+        \end{tikzpicture}
+        .
+    \end{equation}
+    There is only one way, up to an overall sign, to connect the symmetrisers and antisymmetrisers in a Young projector and get a non-zero result.
+    This means that any Young projector sandwiching a permutation the result is proportional to the Young projector with the constant of proportionality being \(1\), \(-1\), or \(0\), depending on the permutation.
+    Thus,
+    \begin{equation}\label{eqn:projector sandwich proportional}
+        \tikzsetnextfilename{scalars-projector-permutation-sandwich-proportional}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw[wire] (0, -0.5) -- ++ (-1, 0);
+            \draw[wire] (0, 0.5) -- ++ (-1, 0);
+            \draw (0, -0.75) rectangle (0.5, 0.75) node [midway] {\(\projector{Y}\)};
+            \node at (-0.5, 0) {\(\vdots\)};
+            \draw[wire] (0.5, 0.5) -- (1.5, 0.5);
+            \draw[wire] (0.5, -0.5) -- (1.5, -0.5);
+            \node at (1, 0) {\(\vdots\)};
+            \draw (1.5, -0.75) rectangle (2, 0.75) node [midway] {\(\sigma\)};
+            \node at (2.5, 0) {\(\vdots\)};
+            \draw[wire] (2, 0.5) -- (3, 0.5);
+            \draw[wire] (2, -0.5) -- (3, -0.5);
+            \draw (3, -0.75) rectangle (3.5, 0.75) node [midway] {\(\projector{Y}\)};
+            \draw[wire] (3.5, -0.5) -- ++ (1, 0);
+            \draw[wire] (3.5, 0.5) -- ++ (1, 0);
+            \node at (4, 0) {\(\vdots\)};
+            \node (equal) at (4.9, 0) {\(=\)};
+            \node[right, xshift=0.2cm] at (equal) {\(m_\sigma\)};
+            \begin{scope}[xshift=6.7cm]
+                \draw[wire] (0, -0.5) -- ++ (-1, 0);
+                \draw[wire] (0, 0.5) -- ++ (-1, 0);
+                \draw (0, -0.75) rectangle (0.5, 0.75) node [midway] {\(\projector{Y}\)};
+                \node at (-0.5, 0) {\(\vdots\)};
+                \draw[wire] (0.5, 0.5) -- (1.5, 0.5);
+                \draw[wire] (0.5, -0.5) -- (1.5, -0.5);
+                \node at (1, 0) {\(\vdots\)};
+            \end{scope}
+        \end{tikzpicture}
+    \end{equation}
+    where \(m_\sigma = 0, \pm 1\) depends only on the permutation \(\sigma\) and the Young projector \(\projector{Y}\).
+    This means that we can compute traces like this working in \(\symmetricGroup\) and without reference to \(\specialUnitary(N)\).
+    
+    In terms of Young projectors the 3-vertex is
+    \begin{equation}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw[wire arrow=0.575] (135:1) -- (0, 0) node [midway, above] {\(X\)};
+            \draw[wire arrow=0.575] (-135:1) -- (0, 0) node [midway, below] {\(Z\)};
+            \draw[wire arrow=0.575] (0, 0) -- (1, 0) node [midway, above] {\(Y\)};
+            \fill (0, 0) circle [radius=0.05];
+            \node (equal) at (1.3, 0) {\(=\)};
+            \draw[wire arrow=0.7] (2.1, 0.5) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (2.1, 0.2) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (2.1, -0.2) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (2.1, -0.5) -- ++ (0.5, 0);
+            \draw[thick, decorate, decoration={calligraphic brace}] (2, 0.05) -- (2, 0.55) node [midway, left, font=\scriptsize] {\(k_X\)};
+            \draw[thick, decorate, decoration={calligraphic brace}] (2, -0.55) -- (2, -0.05) node [midway, left, font=\scriptsize] {\(k_Z\)};
+            \draw (2.6, 0.1) rectangle (3.1, 0.6) node [midway] {\(\projector{X}\)};
+            \draw (2.6, -0.6) rectangle (3.1, -0.1) node [midway] {\(\projector{Z}\)};
+            \draw[wire arrow=0.7] (3.1, 0.5) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (3.1, 0.2) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (3.1, -0.2) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (3.1, -0.5) -- ++ (0.5, 0);
+            \draw (3.6, -0.6) rectangle (4.1, 0.6) node [midway] {\(\projector{Y}\)};
+            \draw[wire arrow=0.7] (4.1, 0.5) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (4.1, 0.2) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (4.1, -0.2) -- ++ (0.5, 0);
+            \draw[wire arrow=0.7] (4.1, -0.5) -- ++ (0.5, 0);
+            \draw[thick, decorate, decoration={calligraphic brace, mirror}] (4.7, -0.55) -- (4.7, 0.55) node [midway, right, font=\scriptsize] {\(k_Y\)};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    Here \(\projector{Y}\) are Young projectors associated with \(k_Y\) box Young diagrams, and hence with \(k_Y\) wires.
+    The Young projectors \(\projector{X}\) and \(\projector{Z}\), and their combination, \(\projector{X} \otimes \projector{Z}\) which appears here, are just elements of the group algebra \(\complex[\symmetricGroup[k_Y]]\).
+    The trace of the three vertex is the \(3j\) coefficient
+    \begin{equation}
+        \tikzsetnextfilename{scalars-3j-in-terms-of-Young-projectors}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw[wire] (0.35, 0) circle [radius=0.6];
+            \draw[wire arrow=0.6] (-0.25, 0) -- (0.95, 0) node [midway, above, font=\scriptsize] {\(Y\)};
+            \fill (-0.25, 0) circle [radius=0.05];
+            \fill (0.95, 0) circle [radius=0.05];
+            \draw[thick, decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}] (0.33, 0.6) -- ++ (-0.01, 0) node [above, font=\scriptsize] {\(\mkern10muX\)};
+            \draw[thick, decorate, decoration={markings, mark=at position 1 with \arrow{stealth}}] (0.33, -0.6) -- ++ (-0.01, 0) node [below, font=\scriptsize] {\(\mkern10muZ\)};
+            \node (equal) at (1.3, 0) {\(=\)};
+            \begin{scope}[xshift=-0.3cm]
+                \draw[wire arrow=0.53] (2.6, 0.5) -- ++ (-0.3, 0) arc (270:90:0.1) -- ++ (2.1, 0) arc (90:-90:0.1) -- ++ (-0.3, 0);
+                \draw[wire arrow=0.52] (2.6, 0.2) -- ++ (-0.3, 0) arc (270:90:0.4) -- ++ (2.1, 0) arc (90:-90:0.4) -- ++ (-0.3, 0);
+                \draw[wire arrow=0.53] (2.6, -0.5) -- ++ (-0.3, 0) arc (90:270:0.1) -- ++ (2.1, 0) arc (-90:90:0.1) -- ++ (-0.3, 0);
+                \draw[wire arrow=0.52] (2.6, -0.2) -- ++ (-0.3, 0) arc (90:270:0.4) -- ++ (2.1, 0) arc (-90:90:0.4) -- ++ (-0.3, 0);
+                \draw (2.6, 0.1) rectangle (3.1, 0.6) node [midway] {\(\projector{X}\)};
+                \draw (2.6, -0.6) rectangle (3.1, -0.1) node [midway] {\(\projector{Z}\)};
+                \draw[wire arrow=0.7] (3.1, 0.5) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (3.1, 0.2) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (3.1, -0.2) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (3.1, -0.5) -- ++ (0.5, 0);
+                \draw (3.6, -0.6) rectangle (4.1, 0.6) node [midway] {\(\projector{Y}\)};
+            \end{scope}
+            \node at (3, 1.1) {};
+            \node at (3, -1.1) {};
+        \end{tikzpicture}
+        .
+    \end{equation}
+    This means that we can use the result \cref{eqn:projector sandwich proportional} to compute this by computing \(\projector{Y} (\projector{X} \otimes \projector{Z}) \projector{Y}\) and comparing to \(\projector{Y}\) to compute the constant of proportionality.
+    
+    Similarly, the \(6j\) coefficient is given by
+    \begin{equation}
+        \tikzsetnextfilename{scalars-6j-in-terms-of-Young-projectors}
+        \begin{tikzpicture}[baseline=(equal.base)]
+            \draw[wire] (0.35, 0) circle [radius=0.6];
+            \begin{scope}[xshift=0.35cm, font=\scriptsize]
+                \draw[wire arrow=0.65] (-30:0.6) -- (0, 0) node [pos=0.6, below] {\(V\)};
+                \draw[wire arrow=0.65] (0, 0) -- (210:0.6) node [pos=0.6, above] {\(Z\)};
+                \draw[wire arrow=0.65] (0, 0.6) -- (0, 0) node [pos=0.6, right, xshift=-0.05cm] {\(W\)};
+                \fill (0, 0) circle [radius=0.05];
+                \fill (0, 0.6) circle [radius=0.05];
+                \fill (210:0.6) circle [radius=0.05];
+                \fill (-30:0.6) circle [radius=0.05];
+                \node at (30:0.75) {\(U\)};
+                \node at (150:0.75) {\(X\)};
+                \node at (270:0.75) {\(Y\)};
+            \end{scope}
+            \node (equal) at (1.5, 0) {\(=\)};
+            \begin{scope}[xshift=2.5cm, yshift=-1.05cm, font=\small]
+                \draw (0, -0.1) rectangle (0.5, 1.4) node [midway] {\(\projector{U}\)};
+                \draw (1, -0.1) rectangle (1.5, 0.6) node [midway] {\(\projector{X}\)};
+                \draw (1, 0.7) rectangle (1.5, 1.4) node [midway] {\(\projector{W}\)};
+                \draw (1, 1.5) rectangle (1.5, 2.2) node [midway] {\(\projector{V}\)};
+                \draw (2, 0.7) rectangle (2.5, 2.2) node [midway] {\(\projector{Z}\)};
+                \draw (3, -0.1) rectangle (3.5, 2.2) node [midway] {\(\projector{Y}\)};
+                \draw[wire arrow=0.7] (0.5, 0) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (0.5, 0.5) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (0.5, 0.8) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (0.5, 1.3) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (1.5, 0.8) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (1.5, 1.3) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (1.5, 1.6) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (1.5, 2.1) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (2.5, 0.8) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (2.5, 1.3) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (2.5, 1.6) -- ++ (0.5, 0);
+                \draw[wire arrow=0.7] (2.5, 2.1) -- ++ (0.5, 0);
+                \draw[wire arrow=0.55] (1.5, 0) -- ++ (1.5, 0);
+                \draw[wire arrow=0.55] (1.5, 0.5) -- ++ (1.5, 0);
+                \draw[wire arrow=0.52] (1, 2.1) arc (270:90:0.1) -- ++ (2.5, 0) arc (90:-90:0.1);
+                \draw[wire arrow=0.513] (1, 1.6) arc (270:90:0.4) -- ++ (2.5, 0) arc (90:-90:0.4);
+                \draw[wire arrow=0.577] (0, 1.3) arc (270:90:0.6) -- ++ (3.5, 0) arc (90:-90:0.6);
+                \draw[wire arrow=0.64] (0, 0) arc (90:270:0.1) -- ++ (3.5, 0) arc (-90:90:0.1);
+                \draw[wire arrow=0.595] (0, 0.5) arc (90:270:0.4) -- ++ (3.5, 0) arc (-90:90:0.4);
+                \draw[wire arrow=0.58] (0, 0.8) arc (90:270:0.6) -- ++ (3.5, 0) arc (-90:90:0.6);
+            \end{scope}
+        \end{tikzpicture}
+    \end{equation}
+    which can also be computed by computing
+    \begin{equation}
+        \projector{Y} (\identityMatrix_{V} \otimes \projector{U})(\projector{V} \otimes \projector{W} \otimes \projector{X}) (\projector{Z} \otimes \identityMatrix_{X}) \projector{Y},
+    \end{equation}
+    where \(\identityMatrix_V\) and \(\identityMatrix_X\) are the identities on the subspaces which \(\projector{V}\) and \(\projector{X}\) project onto, and comparing this result with \(\projector{Y}\) to find the constant of proportionality.
     
     
     % TODO:
-    % I -> Σ 6j/(3j 3j) >-<
-    % loop reduction
     % Actually computing 3js and 6js using traces of products of Young projectors
     
     % TODO: Talk about difference between Young projectors as related to Sn and SU(N) irreps
@@ -2064,6 +2530,22 @@ noabbrev
         
         Given a vector space \(V\) with subspace \(W\) we can identify a second subspace \(W^{\perp}\) which is such that \(V = W \oplus W^{\perp}\).
         
+        \section{Algebra}\label{sec:algebras}
+        An \defineindex{algebra}, \(A\), over \(\field\) is a vector space over \(\field\) with an additional product \(A \times A \to A\) allowing us to multiply two vectors.
+        This product must be compatible with scalar multiplication and vector addition, leading to the following constraints:
+        \begin{itemize}
+            \item right distributivity: \(x(y + z) = xy + xz\) for all \(x, y, z \in A\),
+            \item left distributivity: \((x + y)z = xz + yz\) for all \(x, y, z \in A\),
+            \item compatability with scalars: \((ax)(by) = (ab)(xy)\) for all \(a, b \in \field\) and \(x, y \in A\).
+        \end{itemize}
+        
+        An algebra homomorphism of algebras \(A\) and \(B\) over \(\field\) is a linear map \(f \colon A \to B\) which respects the algebra product: \(f(xy) = f(x)f(y)\) for all \(x, y \in A\).
+        
+        We are interested in two cases of algebras.
+        First, the group algebra \(\complex[G]\), which is an associative algebra, the algebra product is associative, \(x(yz) = (xy)z\) for all \(x, y, z \in \complex[G]\).
+        Associative algebras are familiar, for example \(\generalLinear(\field, n)\) is an associative algebra with vector addition, scalar multiplication, and vector multiplication being matrix addition, scalar multiplication of a matrix, and matrix multiplication respectively.
+        Second, we are interested in Lie algebras, which are non-associative algebras.
+        While non-associative products in general are less familiar we do see them in the form of the commutator, \(\commutator{-}{-}\), which makes \(\generalLinear(\field, n)\) into a Lie algebra.
         
         \chapter{Technicalities}
         There are many technicalities which are worth mentioning but would detract from the body of the report.
