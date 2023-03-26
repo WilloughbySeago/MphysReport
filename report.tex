@@ -8,6 +8,7 @@
 \usepackage{tensor}
 \usepackage{ytableau}
 \ytableausetup{centertableaux}
+\usepackage{microtype}
 
 % Tikz stuff
 \usepackage{tikz}
@@ -36,7 +37,7 @@ language=british  % Make dates dd/mm/yyyy
 % References, should be last things loaded
 \usepackage[pdfauthor={Willoughby Seago},pdftitle={MPhys Report: Computational Group Theory},pdfkeywords={group theory, representation theory, birdtracks, Lie theory},pdfsubject={Lie Groups, Representation Theory}]{hyperref}  % Should be loaded second last (cleveref last)
 \colorlet{hyperrefcolor}{blue!60!black}
-\hypersetup{colorlinks=true, linkcolor=hyperrefcolor, urlcolor=hyperrefcolor}
+\hypersetup{colorlinks=true, linkcolor=hyperrefcolor, urlcolor=hyperrefcolor, citecolor=hyperrefcolor}
 \usepackage[
 capitalize,
 nameinlink,
@@ -65,7 +66,7 @@ noabbrev
 % Title page info
 \title{Computational Group Theory}
 \author{Willoughby Seago}
-\date{\today}
+\date{March 27, 2023}
 \subtitle{MPhys Project Report}
 \subsubtitle{Supervised by Tony Kennedy}
 
@@ -188,9 +189,40 @@ noabbrev
     \frontmatter
     \titlepage
     \maketitle
+    \begin{abstract}
+        The focus of this project was on using group theory and representation theory to simplify tensor expressions.
+        We start by looking at tensors as objects transforming under representations of some group.
+        We then look at how Young diagrams can be used to label the symmetries of a given tensor.
+        These Young diagrams allow us to compute the irreducible representations of the symmetric group using Young projectors.
+        These are expressed in a diagrammatic notation akin to Feynman diagrams, known as birdtracks, which can be used to represent both tensors and permutations.
+        We then look at tensors in \(\specialUnitary(N)\) and in particular focus on computing \(\specialUnitary(N)\) scalars, motivated by the prevalence of \(\specialUnitary(N)\) in quantum field theory.
+    \end{abstract}
     \tableofcontents
     % \listoffigures
     % \listoftables
+    \chapter{Personal Statement}
+    I spent the first few weeks familiarising myself with the basics of group theory and representation theory, building on my existing knowledge mostly through study of \cite{cvitanovic}.
+    This text also introduces birdtracks, the main notation used for most of this work.
+    I then moved on to studying the representation theory of the symmetric group, in particular looking at Young diagrams and Young projectors.
+    Once I felt I had a good understanding of these I also started writing code, in \Mathematica{}.
+    The rest of the project then followed a general pattern of studying a piece of mathematics and then writing code to implement the useful features of this mathematics.
+    In this way in the first semester I studied Young diagrams, Young projectors, the Garnir relations, and representations of the symmetric group and begun implementing code for each of these, culminating in code which can compute the representation of a permutation in a given representation given by a Young diagram.
+    I spent the first week implementing Young diagrams and Young tableaux so that they would display automatically.
+    It then took approximately three weeks to implement the Garnir relations, allowing me to decompose arbitrary Young tableaux in terms of standard Young tableaux.
+    From here it took about four more weeks to understand and implement the calculation of representations.
+    The rest of the first semester I worked on implementing Young projectors.
+    I also looked into Hermitian Young projectors, and implemented a method for computing these given Young projectors.
+    
+    Throughout the first semester I was also taking a course in group theory and studying quantum field theory.
+    Both of these courses helped develop my understanding of the material in this project, and also demonstrated many applications of the concepts I was studying.
+    At the same time I was attending a fortunately timed series of seminars by John Baez \cite{baez} which covered topics such as Young tableaux and Lie groups/algebras from a categorical approach.
+    
+    Over the Christmas break I focused on writing up what I had learned so far, and also read more about tensors in \(\specialUnitary(N)\).
+    In second semester I studied \(3j\) and \(6j\) coefficients and the recoupling relations needed to simplify scalars.
+    I spent about a week writing code which computed the hook formula, giving the dimension of a representation.
+    I then begun writing code to use Young projectors to compute \(3j\) and \(6j\) coefficients.
+    Throughout this time I was also taking a course on gauge theories, which had many applications of the mathematics I studied during this project, and a course on category theory, which generalises a lot of the ideas studied here and makes them rigorous.
+    
     \mainmatter
     
     \chapter{Introduction}
@@ -214,7 +246,7 @@ noabbrev
     One of the most powerful tools available for simplifying expressions with tensors is to exploit symmetries which these tensors posses.
     Often this comes in the form of the simple, yet surprisingly powerful, fact that the product of something symmetric with something antisymmetric must vanish.
     This can be demonstrated with a simple argument.
-    Suppose \(S, A \colon \naturals \times \naturals \to \reals\) are a symmetric antisymmetric function of natural numbers respectively.
+    Suppose \(S, A \colon \naturals \times \naturals \to \reals\) are a symmetric and antisymmetric function of natural numbers respectively.
     That is \(S(n, m) = S(m, n)\) and \(A(n, m) = -A(m, n)\).
     Then using these properties, and renaming the bound variables \(n\) and \(m\), we get the result
     \begin{alignat}{3}
@@ -232,13 +264,11 @@ noabbrev
     This will be the basis for many of the observations we make in this report.
     
     This result is probably familiar from expressions such as \(\delta_{ij}\varepsilon^{ijk} = 0\), where we employ the Einstein summation convention, as we shall do throughout this report.
-    % possible cut
-    Recall that the Kronecker delta, \(\delta^{ij}\), is symmetric, \(\delta_{ij} = \delta_{ji}\), whereas the Levi--Civita symbol, \(\varepsilon^{ijk}\), is completely antisymmetric, that is it is antisymmetric in any pair of indices, so \(\varepsilon^{ijk} = -\varepsilon^{jik} = -\varepsilon^{ikj} = -\varepsilon^{kij} = \varepsilon^{kij} = \varepsilon^{jki}\).
-    % end possible cut
+    Recall that the Kronecker delta, \(\delta^{ij}\), is symmetric, \(\delta_{ij} = \delta_{ji}\), whereas the Levi--Civita symbol, \(\varepsilon^{ijk}\), is completely antisymmetric, that is it is antisymmetric in any pair of indices, so \(\varepsilon^{ijk} = \varepsilon^{kij} = \varepsilon^{jki} = -\varepsilon^{jik} = -\varepsilon^{ikj} = -\varepsilon^{kij}\).
     
-    Another example which comes up in QED is the field strength tensor, \(F^{\mu\nu} \coloneqq \partial^\mu A^\nu - \partial^\nu A^\mu\), where \(A^\mu\) is the four-potential.
+    Another example which comes up in QED is the field strength tensor, \(F^{\mu\nu} \coloneqq \partial^\mu A^\nu - \partial^\nu A^\mu\), where\footnote{Note that we work in units where \(c = 1\).} \(A^\mu = (\varphi, \vv{A})\) is the four-potential, with \(\varphi\) and \(\vv{A}\) being the scalar and vector potentials, such that \(\vv{E} = -\grad\varphi - \partial_t\vv{A}\) and \(\vv{B} = \curl\vv{A}\) \cite[569]{griffiths}.
     As can be seen from the definition \(F^{\mu\nu}\) is antisymmetric, \(F^{\mu\nu} = -F^{\nu\mu}\).
-    We can exploit this to simplify the product \(F^{\mu\nu}F_{\mu\nu}\), which occurs frequently in QED, being the term in the Lagrangian responsible for the propagation of photons.
+    We can exploit this to simplify the product \(F^{\mu\nu}F_{\mu\nu}\), which occurs frequently in QED, being the term in the Lagrangian responsible for the propagation of photons \cite[294]{peskin}.
     Since \(F_{\mu\nu}\) is antisymmetric we are free to replace \(F^{\mu\nu}\) with any tensor whose antisymmetric part is \(F^{\mu\nu}\), since in this product the symmetric part will always vanish.
     Thus, we can replace \(F^{\mu\nu}\) with \(2\partial^\mu A^\nu\), and then we have
     \begin{equation}
@@ -249,7 +279,7 @@ noabbrev
     The question then is how do we deal with objects with more complex symmetries?
     Tensors which aren't just totally symmetric or totally antisymmetric, but symmetric in some indices, antisymmetric in others, and possibly with some indices which don't take part in any such symmetry.
     An example of such a tensor is the Riemann tensor appearing in general relativity, characterising the curvature of spacetime.
-    The Riemann tensor, \(R_{\mu\nu\rho\sigma}\), has the following symmetries:
+    The Riemann tensor, \(R_{\mu\nu\rho\sigma}\), has the following symmetries \cite[141]{weinberg}:
     \begin{itemize}
         \item antisymmetric in the first two indices: \(R_{\mu\nu\rho\sigma} = -R_{\nu\mu\rho\sigma}\)
         \item antisymmetric in the second two indices: \(R_{\mu\nu\rho\sigma} = -R_{\mu\nu\sigma\rho}\)
@@ -259,7 +289,7 @@ noabbrev
     This motivates much of the work in the following report.
     First, we need a general definition of a tensor to understand the sort of objects with which we are working.
     This leads to group theory and representation theory.
-    Then should be to find a way to classify these symmetries.
+    Then we should find a way to classify these symmetries.
     This will lead to the idea of the symmetric group and Young diagrams and Young tableaux.
     Once we have these we will look for a way to produce tensors with these symmetries.
     This leads to the idea of Young projectors.
@@ -284,11 +314,11 @@ noabbrev
     If the reader is not familiar with these concepts then they may simply replace rings with the integers, \(\integers\), and fields with either the real numbers, \(\reals\), or complex numbers, \(\complex\).
     
     It is assumed that the reader is familiar with basic linear algebra, such as vectors and matrices.
-    A few necessary concepts which appear less often in physics are recapped in \cref{app:linear algebra}
+    A few necessary concepts which appear less often in physics are recapped in \cref{sec:linear algebra}.
     
     \chapter{Tensors}
     We start by looking at the definition of a tensor.
-    This definition can be neatly summarised as \enquote{a tensor is something which transforms like a tensor}.
+    This definition can be neatly summarised as \enquote{a tensor is something which transforms like a tensor} \cite[52]{zee}.
     However, in doing so we deliberately avoid defining how a tensor transforms.
     Often it is enough to simply define how a specific type of tensor transforms.
     For example, in classical mechanics most of the tensors we are interested in are Cartesian tensors, these are tensors which transform under a rotation using a rotation matrix, although even here we aren't being explicit about how this rotation matrix is used.
@@ -296,13 +326,13 @@ noabbrev
     To define the transformation of a tensor in the most general way possible we need to be able to reason about general transformations, this leads to the notion of a group, a collection of symmetries with a way of combining two symmetries.
     We then need to define how an abstract group corresponds to a transformation of a vector space.
     This leads to the idea of a representation.
-    We then use representations to define how a tensor transforms, and hence what a tensor is.
+    We then use representations to define how a tensor transforms, and hence, what a tensor is.
     
     \section{Groups}
     Groups capture and abstract the idea of a symmetry.
     Intuitively a symmetry is something we can do to a system which leaves the system unchanged, or \defineindex{invariant}, under that symmetry.
     We can abstract the notion of a symmetry through four requirements.
-    Given some collection of symmetries there must be a way to combine them, some way to do nothing to the system, some way to undo any of the symmetries, and the final requirement is more technical, but can be neatly summarised as it doesn't matter how we use brackets when writing down these symmetry compositions.
+    Given some collection of symmetries there must be a way to combine them, some way to do nothing to the system, some way to undo any of the symmetries, and the final requirement is more technical, but can be neatly summarised as \enquote{it doesn't matter how we use brackets when writing down these symmetry compositions}.
     This leads to the following definition.
     
     \begin{dfn}{Group}{}
@@ -2454,6 +2484,8 @@ noabbrev
                 \draw[wire arrow=0.64] (0, 0) arc (90:270:0.1) -- ++ (3.5, 0) arc (-90:90:0.1);
                 \draw[wire arrow=0.595] (0, 0.5) arc (90:270:0.4) -- ++ (3.5, 0) arc (-90:90:0.4);
                 \draw[wire arrow=0.58] (0, 0.8) arc (90:270:0.6) -- ++ (3.5, 0) arc (-90:90:0.6);
+                \node[red] at (2.2, 2.6) {};
+                \node[red] at (2.2, -0.5) {};
             \end{scope}
         \end{tikzpicture}
     \end{equation}
@@ -2463,6 +2495,32 @@ noabbrev
     \end{equation}
     where \(\identityMatrix_V\) and \(\identityMatrix_X\) are the identities on the subspaces which \(\projector{V}\) and \(\projector{X}\) project onto, and comparing this result with \(\projector{Y}\) to find the constant of proportionality.
     
+    \section{Conclusion and Further Work}
+    We started with \enquote{a tensor is something which transforms like a tensor}.
+    This motivated the study of symmetry, captured by the notion of a group, and applied to tensors through a representation.
+    We then introduced birdtracks as a notation for computing both tensors and permutations.
+    
+    The need to classify the symmetries of mixed tensors, such as the Riemann tensor, \(R_{\mu\nu\rho\sigma}\), lead to the introduction of Young diagrams to label these symmetries.
+    The reverse question, of constructing tensors with a given symmetry, motivated the construction of Young projectors.
+    We then saw that a particular basis of these, formed from standard tableaux, could be used to reduce the number of projectors we needed to calculate, as we could use the Garnir relations to write arbitrary tableaux in this basis.
+    This is all happening at the level of the group algebra, \(\complex[G]\).
+    We then saw how using Young diagrams we can label and compute irreducible representations of the symmetric group.
+    This allows us to perform calculations on the level of a matrix algebra.
+    
+    Finally, we looked at tensors under \(\specialUnitary(N)\), which are prevalent in quantum field theory.
+    We focused on scalars and we saw that any scalar can be reduced to a sum of products of scalars called \(3j\)s and \(6j\)s, which can in turn be computed using only the symmetric group and Young projectors.
+    Essentially turning complicated \(\specialUnitary(N)\) calculations into an exercise in manipulating diagrams and then computing constants of proportionality between two different diagrams.
+    
+    There are many unanswered questions.
+    We introduced Hermitian Young projectors, but didn't study them much.
+    The hope is that these Hermitian Young projectors make certain calculations simpler, such as computing the \(3j\)s and \(6j\)s by making it immediately obvious how we can connect up the Young projectors in such a way that the result doesn't vanish.
+    
+    Another obvious question is if it is possible to generalise this work to other groups.
+    In particular can it be generalised to \(\specialOrthogonal(N)\)?
+    If so then these methods could be applied to classical mechanics and relativity, which involves extensive study of \(\specialOrthogonal^+(1, 3)\).
+    
+    On the computation side it would also be beneficial to write an algorithm which performs the graph manipulation required to simplify a given scalar diagram into a sum of \(3j\)s and \(6j\)s.
+    The code for computing \(3j\)s and \(6j\)s is also not fully automated, it is sometimes necessary to manually insert a permutation between Young projectors to get a non-zero result.
     
     % TODO:
     % Actually computing 3js and 6js using traces of products of Young projectors
